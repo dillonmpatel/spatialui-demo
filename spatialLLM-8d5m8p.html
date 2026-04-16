@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claude with Spatial Reasoning — Smart Speaker Demo</title>
+<title>LLM 3D — Smart Speaker Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/exporters/USDZExporter.js"></script>
@@ -129,16 +129,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
     <div class="wp-icon">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--copper)" stroke-width="1.5"/><path d="M5 8.5l2 2 4-4" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <h2>What if Claude had spatial reasoning?</h2>
-    <p>Rotate the 3D model, click the annotations, and explore the chat prompts to see how Claude could reason spatially about a real product.</p>
+    <h2>What if your LLM had spatial reasoning?</h2>
+    <p>Rotate the 3D model, click the annotations, and explore the chat prompts to see how an LLM could reason spatially about a real product.</p>
     <button onclick="document.getElementById('welcomeOverlay').style.display='none'">Explore the demo</button>
   </div>
 </div>
 
 <div class="topbar">
-  <div class="logo"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>Claude <span>SpatialUI</span></div>
+  <div class="logo"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>LLM <span>3D</span></div>
   <div class="sep"></div>
-  <div class="tl">what if claude had a 3D viewer with spatial reasoning?</div>
+  <div class="tl">what if your LLM had a 3D viewer with spatial reasoning?</div>
   <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
   <nav class="topbar-nav">
     <a href="why-3d.html">3D as Code</a>
@@ -148,7 +148,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
 <div class="main">
   <div class="chat">
     <div class="chat-msgs" id="chatMsgs">
-      <div class="chat-msg msg-claude"><strong>Claude Home</strong> — a fictitious smart speaker concept that runs a distilled Claude 3B parameter locally on an FPGA<br><br>
+      <div class="chat-msg msg-claude"><strong>LLM Home</strong> — a fictitious smart speaker concept that runs a distilled LLM 3B parameter locally on an FPGA<br><br>
       • Wall-mounted, passive-cooled speaker<br>
       • 45 tok/s inference, no cloud required<br>
       • $38 COGS at DVT, $89 MSRP target<br>
@@ -478,7 +478,7 @@ const DETAIL={
     Overview:R('PN','SOM-K26 (AMD)')+R('Part','XCZU5EV · 26mm BGA')+R('Inference','45 tok/s @ 12W')+RS('Cost','$12 (32% of BOM)','red')+RS('Lead','16 weeks','red'),
     Status:R('Owner','Mike Torres · FW Eng')+R('Last rev','v1.1 (AMD stock)')+R('Stage',SB('cots','COTS Module'))+R('2D drawing',RS('N/A','Vendor datasheet','text3'))+R('BOM status',RS('Approved','Long-lead ordered','amber'))+CHK('Vendor DFM approved',true)+CHK('PO placed',true)+CHK('Units received',false),
     DFM:RS('DFT','JTAG OK','green')+RS('DFR','Risk','red')+SUB('Single-source (AMD). Clock gating saves 3.6W → 11°C. DFX partial reconfig in 50ms. R_jc = 0.5 °C/W fixed.'),
-    Alts:ALT('AMD Kria K26',true,'$12 · 16wk · 45 tok/s · Best Claude perf, proven DPU overlay')+ALT('AMD Kria K24',false,'$8 · 12wk · ~30 tok/s · Needs model re-opt. Saves $4/unit.')+ALT('Microchip PolarFire SoM',false,'$10 · 10wk · ~25 tok/s · Lower power (8W), diff toolchain. 8-wk FW port.'),
+    Alts:ALT('AMD Kria K26',true,'$12 · 16wk · 45 tok/s · Best LLM perf, proven DPU overlay')+ALT('AMD Kria K24',false,'$8 · 12wk · ~30 tok/s · Needs model re-opt. Saves $4/unit.')+ALT('Microchip PolarFire SoM',false,'$10 · 10wk · ~25 tok/s · Lower power (8W), diff toolchain. 8-wk FW port.'),
     Issues:ISS('high','Single-source dependency','AMD only. 16-wk lead + customs risk. No drop-in alt.','Supply chain · Eval PolarFire at DVT')+ISS('high','Cost — 32% of BOM','$12/unit. K24 saves $4 but costs 15 tok/s.','PM · Model opt to enable K24')+ISS('med','Thermal throttle at sustained','15W → T_j near 85°C. Clock gating + DFX mitigate.','FW eng · Throttle policy at EVT'),
     Phase:R('Phase',PH)+R('Rev','SOM v1.1 (stock)')+RS('PO','200 units ordered','green')+R('EVT action','DPU overlay bring-up')+R('DVT gate','Model opt, 2nd source eval')}},
   hsbase:{tabs:['Overview','Status','DFM','Alts','Issues'],content:{
@@ -905,11 +905,11 @@ function showAssemblyStep(idx){
 // ===== CLICK-THROUGH DEMO =====
 const demoSteps=[
   {btn:'What am I looking at?',user:'Walk me through this assembly',
-    claude:'You\'re looking at the <strong>Claude Home</strong> smart speaker \u2014 7 subsystems in a wall-mounted enclosure:<br><br>\u2022 <strong>Bottom:</strong> Magnet array (wall mount) + battery pack<br>\u2022 <strong>Middle:</strong> 8-layer PCB with power management + Qi wireless charging<br>\u2022 <strong>Top:</strong> FPGA running Claude 3B, 4 speakers, copper heatsink under a mesh dome<br><br>The heatsink is the most complex part \u2014 curved fins follow the dome contour for passive cooling. No fan allowed (acoustic product).<br><br><strong>Try clicking any annotation</strong>, or choose a case study below.',
+    claude:'You\'re looking at the <strong>LLM Home</strong> smart speaker \u2014 7 subsystems in a wall-mounted enclosure:<br><br>\u2022 <strong>Bottom:</strong> Magnet array (wall mount) + battery pack<br>\u2022 <strong>Middle:</strong> 8-layer PCB with power management + Qi wireless charging<br>\u2022 <strong>Top:</strong> FPGA running LLM 3B, 4 speakers, copper heatsink under a mesh dome<br><br>The heatsink is the most complex part \u2014 curved fins follow the dome contour for passive cooling. No fan allowed (acoustic product).<br><br><strong>Try clicking any annotation</strong>, or choose a case study below.',
     mcp:['Solidworks','SAP'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();clearImpactBadges();hideCOGS();
       if(!exploded)toggleExplode();
       addImpactBadge('battery','info','<strong>3000mAh</strong> · 11.1V · Cordless mode');
-      addImpactBadge('fpga','info','<strong>45 tok/s</strong> · Claude 3B · 12W');
+      addImpactBadge('fpga','info','<strong>45 tok/s</strong> · LLM 3B · 12W');
       addImpactBadge('hsbase','info','<strong>$4.50</strong> · C110 copper · 14 fins');
       addImpactBadge('speaker','info','<strong>4× 50mm</strong> · Neodymium · Cardinal');
       addImpactBadge('internals','info','<strong>8-layer FR4</strong> · 100×80mm · Qi 15W · $3.50');
@@ -1228,13 +1228,13 @@ async function exportUSDZ(){
     const exporter=new THREE.USDZExporter();
     const blob=await exporter.parse(scene);
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='claude-home-speaker.usdz';
+    const a=document.createElement('a');a.href=url;a.download='llm-home-speaker.usdz';
     a.click();URL.revokeObjectURL(url);
-    chatMsg('claude','Exported assembly to <strong>claude-home-speaker.usdz</strong>. Open in Apple Quick Look, Reality Composer, or any USD-compatible viewer.');
+    chatMsg('claude','Exported assembly to <strong>llm-home-speaker.usdz</strong>. Open in Apple Quick Look, Reality Composer, or any USD-compatible viewer.');
   }catch(e){
     chatMsg('claude','USDZ export requires a compatible browser. Falling back to OBJ...');
     // Fallback: export as OBJ text
-    let obj='# Claude Home Speaker Assembly\n';let vi=1;
+    let obj='# LLM Home Speaker Assembly\n';let vi=1;
     G.traverse(c=>{if(c.isMesh&&c.visible&&c.geometry){
       const pos=c.geometry.attributes.position;if(!pos)return;
       const m4=c.matrixWorld;obj+='o '+c.userData.label+'\n';
@@ -1243,7 +1243,7 @@ async function exportUSDZ(){
       const idx=c.geometry.index;if(idx){for(let i=0;i<idx.count;i+=3)obj+='f '+(idx.getX(i)+vi)+' '+(idx.getX(i+1)+vi)+' '+(idx.getX(i+2)+vi)+'\n'}
       vi+=pos.count}});
     const blob=new Blob([obj],{type:'text/plain'});const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download='claude-home-speaker.obj';a.click();URL.revokeObjectURL(url);
+    const a=document.createElement('a');a.href=url;a.download='llm-home-speaker.obj';a.click();URL.revokeObjectURL(url);
   }
 }
 

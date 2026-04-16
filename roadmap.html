@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SpatialUI Roadmap</title>
+<title>LLM 3D Roadmap</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#fff;--bg2:#f5f5f3;--bg3:#eceae6;--text:#1a1a1a;--text2:#555550;--text3:#8a8880;--border:rgba(0,0,0,0.08);--copper:#b45c2e;--copperBg:rgba(180,92,46,0.06);--blue:#2563eb;--red:#dc2626;--green:#16a34a;--amber:#b45309;--purple:#7c3aed;--teal:#0d9488;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace}
@@ -92,18 +92,18 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
 </head>
 <body>
 <div class="topbar">
-  <div class="logo"><a href="spatialLLM-8d5m8p.html"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>Claude <span>SpatialUI</span></a></div>
+  <div class="logo"><a href="spatialLLM-8d5m8p.html"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>LLM <span>3D</span></a></div>
   <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
   <nav class="topbar-nav">
     <a href="why-3d.html">3D as Code</a>
-    <a href="roadmap.html" class="active">SpatialUI Roadmap</a>
+    <a href="roadmap.html" class="active">LLM 3D Roadmap</a>
   </nav>
 </div>
 
 <div class="content">
 
 <h1>A proposed 6-12 month research program.</h1>
-<p class="subtitle">Can Claude's spatial reasoning become a shipping product? Here's a proposed path to find out — starting with what the benchmarks already show.</p>
+<p class="subtitle">Can an LLM's spatial reasoning become a shipping product? Here's a proposed path to find out — starting with what the benchmarks already show.</p>
 
 <!-- Architecture -->
 <div class="section open">
@@ -113,10 +113,10 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
     <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   </div>
   <div class="section-body">
-    <p>Claude with spatial reasoning would be a five-layer system. Claude's cross-domain reasoning would sit at the top, making tool calls through a Spatial MCP schema into the data sources that hardware engineers already use.</p>
+    <p>An LLM with spatial reasoning would be a five-layer system. The LLM's cross-domain reasoning would sit at the top, making tool calls through a Spatial MCP schema into the data sources that hardware engineers already use.</p>
     <div class="arch">
       <div class="arch-layer l1">
-        <div class="arch-label">Layer 1 — Claude Reasoning</div>
+        <div class="arch-label">Layer 1 — LLM Reasoning</div>
         <div class="arch-content">Cross-domain synthesis &middot; Context window &middot; Code reasoning that may transfer to CAD-as-code<sup>1,2</sup></div>
       </div>
       <div class="arch-arrow">&darr; tool calls</div>
@@ -178,14 +178,14 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
     <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   </div>
   <div class="section-body">
-    <p>I ran Claude Opus 4.6 on GeoGramBench to establish a spatial reasoning baseline and it had an <strong>97.6% accuracy (488/500)</strong>. While I haven't benchmarked against the latest competitor performance, Claude is capable of interpreting code-described geometry.</p>
+    <p>I ran a leading LLM on GeoGramBench to establish a spatial reasoning baseline and it had an <strong>97.6% accuracy (488/500)</strong>. While I haven't benchmarked against the latest competitor performance, LLMs are capable of interpreting code-described geometry.</p>
 
     <div class="phase-body-inner">
       <strong>Remaining Phase 1 work: Build Spatial MCP + measure tool delta</strong>
       <ul>
         <li>Build minimal Spatial MCP schema: select_region, measure_distance, query_feature_tree.</li>
         <li>Re-run GeoGramBench and 3DSRBench with tool access. Measure the delta on real CAD assemblies (not just procedural geometry code).</li>
-        <li>GeoGramBench tests code-described geometry. Real CAD files are harder — tool access could bridge that gap. If the Claude Code analogy holds — where tool access dramatically improved code task performance — a 40-60% improvement for spatial tools would be a reasonable initial hypothesis.</li>
+        <li>GeoGramBench tests code-described geometry. Real CAD files are harder — tool access could bridge that gap. If the LLM Code analogy holds — where tool access dramatically improved code task performance — a 40-60% improvement for spatial tools would be a reasonable initial hypothesis.</li>
       </ul>
       <div class="phase-metric">Objective: Quantify tool-augmented improvement on real CAD data.<br>KR1: Establish zero-shot baseline on 3DSRBench assembly tasks.<br>KR2: Measure tool-augmented delta on same tasks — hypothesis: &ge;40% gap closure.<br>KR3: Identify categories where tools alone are insufficient and fine-tuning is needed.</div>
     </div>

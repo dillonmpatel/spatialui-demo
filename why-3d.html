@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>3D as Code — SpatialUI</title>
+<title>3D as Code — LLM 3D</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#fff;--bg2:#f5f5f3;--bg3:#eceae6;--text:#1a1a1a;--text2:#555550;--text3:#8a8880;--border:rgba(0,0,0,0.08);--copper:#b45c2e;--copperBg:rgba(180,92,46,0.06);--blue:#2563eb;--red:#dc2626;--green:#16a34a;--amber:#b45309;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace}
@@ -82,7 +82,7 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
 </head>
 <body>
 <div class="topbar">
-  <div class="logo"><a href="spatialLLM-8d5m8p.html"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>Claude <span>SpatialUI</span></a></div>
+  <div class="logo"><a href="spatialLLM-8d5m8p.html"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>LLM <span>3D</span></a></div>
   <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
   <nav class="topbar-nav">
     <a href="why-3d.html" class="active">3D as Code</a>
@@ -98,13 +98,13 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
     <h3>Code</h3>
     <div class="cmp-row"><strong>Medium:</strong> Text — instructions, logic, programs</div>
     <div class="cmp-row"><strong>Properties:</strong> Inspectable, editable, versionable, composable</div>
-    <div class="cmp-row"><strong>AI unlock:</strong> Claude Code — Claude sees your repo</div>
+    <div class="cmp-row"><strong>AI unlock:</strong> LLM Code — the LLM sees your repo</div>
   </div>
   <div class="cmp-col">
     <h3>3D</h3>
     <div class="cmp-row"><strong>Medium:</strong> Geometry — shapes, assemblies, worlds</div>
     <div class="cmp-row"><strong>Properties:</strong> Inspectable, editable, versionable, composable</div>
-    <div class="cmp-row"><strong>AI unlock:</strong> SpatialUI — Claude sees in 3D, and you point back</div>
+    <div class="cmp-row"><strong>AI unlock:</strong> LLM 3D — the LLM sees in 3D, and you point back</div>
   </div>
 </div>
 
@@ -114,7 +114,7 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
   <h2>3D is the spatial equivalent of code</h2>
   <ul class="section-bullets">
     <li><strong>Code is the interface between humans and AI for software.</strong> 3D plays the same role for physical and virtual worlds — to generate, edit, simulate, and communicate between both.</li>
-    <li><strong>This needs to be a two-way interaction.</strong> Claude should be able to annotate, highlight, and manipulate 3D views. The user should be able to select, point, and manipulate back. The 3D viewer is a shared workspace you and Claude can look at together.</li>
+    <li><strong>This needs to be a two-way interaction.</strong> The LLM should be able to annotate, highlight, and manipulate 3D views. The user should be able to select, point, and manipulate back. The 3D viewer is a shared workspace you and the LLM can look at together.</li>
     <li><strong>The other approach is asking the model to be the program instead of write one.</strong> Generative 3D ignores what makes code useful — you can't inspect it on a granular level, direct it to another tool, or provide specific feedback.</li>
   </ul>
 </div>
@@ -122,10 +122,10 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
 <!-- Point 2 -->
 <div class="section">
   <div class="section-icon pi-blue">2</div>
-  <h2>Claude may already have the foundation</h2>
+  <h2>LLMs may already have the foundation</h2>
   <ul class="section-bullets">
-    <li><strong>Claude Code showed that tool access can unlock latent capability.</strong> Claude could already reason about code — bash and grep gave it the way in. I ran Claude Opus on GeoGramBench to see how it performed and it scored 97.6% (488/500). I haven't benchmarked against the latest competitor performance, but Claude can translate procedural descriptions and geometric understanding. It just needs the right tools.</li>
-    <li><strong>I use Claude Code daily in hardware R&D at Apple.</strong> It helps with isolated software problems, but I'm hitting the ceiling of what isolated tools can do. The next step is giving Claude eyes for geometry — the spatial equivalent of bash and grep.</li>
+    <li><strong>LLM Code showed that tool access can unlock latent capability.</strong> LLMs can already reason about code — bash and grep gave it the way in. A leading LLM scored 97.6% (488/500) on GeoGramBench. LLMs can translate procedural descriptions and geometric understanding. It just needs the right tools.</li>
+    <li><strong>I use LLM Code daily in hardware R&D at Apple.</strong> It helps with isolated software problems, but I'm hitting the ceiling of what isolated tools can do. The next step is giving an LLM eyes for geometry — the spatial equivalent of bash and grep.</li>
     <li><strong>Product design and engineering is the right place to start.</strong> It has well-defined workflows, structured data (parametric CAD and GD&amp;T), and tight feedback loops. Broader applications like architecture, robotics, and digital twins will follow naturally.</li>
   </ul>
 </div>
@@ -135,9 +135,9 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
   <div class="section-icon pi-green">3</div>
   <h2>What it would look like</h2>
   <ul class="section-bullets">
-    <li><strong>Claude Code, but for physical products.</strong> Open a 3D assembly. Claude sees the geometry, traverses the feature tree, measures distances, and cross-references with simulation, PCB, and supply chain data.</li>
-    <li><strong>Try the demo:</strong> click "Case 1: ID wants 30% smaller" on the <a href="spatialLLM-8d5m8p.html" style="color:var(--copper)">home page</a>. Claude identifies the thermal impact, flags parts that no longer fit, checks the power envelope, and estimates the cost delta — pulling from CAD, simulation, and ERP in one response. That cross-domain reasoning currently takes a room full of specialists.</li>
-    <li><strong>3D today is fragmented.</strong> Dozens of file formats, incompatible renderers, tools that cost thousands and take years to learn. Something like Claude Code for 3D could make spatial design accessible down to the consumer level — people could interact with natural language and work with 3D design tools in ways that have been completely inaccessible to them until now.</li>
+    <li><strong>LLM 3D, but for physical products.</strong> Open a 3D assembly. the LLM sees the geometry, traverses the feature tree, measures distances, and cross-references with simulation, PCB, and supply chain data.</li>
+    <li><strong>Try the demo:</strong> click "Case 1: ID wants 30% smaller" on the <a href="spatialLLM-8d5m8p.html" style="color:var(--copper)">home page</a>. the LLM identifies the thermal impact, flags parts that no longer fit, checks the power envelope, and estimates the cost delta — pulling from CAD, simulation, and ERP in one response. That cross-domain reasoning currently takes a room full of specialists.</li>
+    <li><strong>3D today is fragmented.</strong> Dozens of file formats, incompatible renderers, tools that cost thousands and take years to learn. Something like LLM 3D could make spatial design accessible down to the consumer level — people could interact with natural language and work with 3D design tools in ways that have been completely inaccessible to them until now.</li>
     <li><strong>For the detailed product roadmap and phasing, <a href="roadmap.html" style="color:var(--copper)">see the next page</a>.</strong></li>
   </ul>
 </div>
