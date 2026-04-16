@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude with Spatial Reasoning — Smart Speaker Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.0/examples/js/exporters/USDZExporter.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#eceae6;--bg4:#e2e0dc;--text:#1a1a1a;--text2:#555550;--text3:#8a8880;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.12);--blue:#2563eb;--teal:#0d9488;--purple:#7c3aed;--coral:#dc4a3a;--amber:#b45309;--red:#dc2626;--green:#16a34a;--copper:#b45c2e;--copperBg:rgba(180,92,46,0.06);--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.topbar{height:44px;display:flex;align-items:center;padding:0 14px;gap:10px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;z-index:10}
+.topbar-nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.topbar-nav a{font-family:var(--mono);font-size:9.5px;letter-spacing:0.03em;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;transition:background 0.15s,color 0.15s}
+.topbar-nav a:hover{background:var(--bg3);color:var(--text)}
+.logo{font-weight:600;font-size:13.5px;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}.logo span{color:var(--copper)}
+.tl{font-family:var(--mono);font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3)}
+.sep{width:1px;height:18px;background:var(--border)}
+.main{display:flex;flex:1;overflow:hidden}
+.viewport{flex:1;position:relative;background:#f0efec}
+#cvs{width:100%;height:100%;display:block;cursor:grab}#cvs:active{cursor:grabbing}
+.vp-badge{position:absolute;top:10px;left:10px;display:none;align-items:center;gap:5px;padding:5px 9px;border-radius:5px;font-size:10px;font-weight:500;background:var(--copperBg);border:1px solid rgba(180,92,46,0.15);color:var(--copper);z-index:6}
+.vp-badge.vis{display:flex}
+.vp-dot{width:5px;height:5px;border-radius:50%;background:var(--copper);animation:pu 1.5s ease infinite}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:0.3}}
+.vp-info{position:absolute;bottom:8px;left:10px;font-family:var(--mono);font-size:8px;color:var(--text3);letter-spacing:0.04em;line-height:1.8;pointer-events:none;white-space:pre}
+.vp-btn{position:absolute;bottom:10px;padding:5px 12px;border-radius:5px;font-family:var(--font);font-size:10px;font-weight:500;background:rgba(255,255,255,0.9);border:1px solid var(--border);color:var(--text2);cursor:pointer;z-index:10;transition:all 0.15s}
+.vp-btn:hover{background:#fff;color:var(--text);border-color:var(--border2)}
+.share-menu{position:absolute;bottom:45px;right:210px;background:#fff;border:1px solid var(--border2);border-radius:8px;padding:4px;z-index:16;box-shadow:0 4px 12px rgba(0,0,0,0.12);display:none}
+.share-menu.vis{display:block}
+.share-opt{display:block;width:100%;text-align:left;padding:6px 10px;border:none;background:none;font-family:var(--font);font-size:9px;color:var(--text2);cursor:pointer;border-radius:4px;white-space:nowrap}
+.share-opt:hover{background:var(--bg2);color:var(--text)}
+.ann-wrap{position:absolute;inset:0;pointer-events:none;z-index:5}
+.ann{position:absolute;padding:2px 7px;border-radius:3px;font-size:8.5px;font-family:var(--mono);background:rgba(255,255,255,0.88);border:1px solid rgba(0,0,0,0.08);color:var(--text2);white-space:nowrap;transform:translate(-50%,-100%);border-left:2.5px solid var(--text3);pointer-events:auto;cursor:pointer;transition:background 0.15s}
+.ann:hover{background:rgba(255,255,255,1);border-color:var(--copper)}
+.ann-copper{border-left-color:var(--copper)}.ann-green{border-left-color:var(--green)}.ann-dark{border-left-color:#444}.ann-teal{border-left-color:var(--teal)}.ann-purple{border-left-color:var(--purple)}
+.ann .ann-name{font-weight:600;color:var(--text)}.ann .ann-spec{color:var(--text3);margin-left:4px}
+.ann .ann-rels{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
+.ann .rel-flag{padding:0 4px;border-radius:2px;font-size:6.5px;font-weight:500;letter-spacing:0.03em;text-transform:uppercase}
+.detail-card{position:absolute;pointer-events:auto;background:#fff;border:1px solid var(--border2);border-radius:10px;padding:0;width:260px;z-index:20;box-shadow:0 4px 16px rgba(0,0,0,0.12);transform:translate(-50%,0)}
+.dc-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 4px;overflow-x:auto}
+.dc-tab{flex-shrink:0;padding:6px 6px;font-size:8px;font-weight:500;text-align:center;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;font-family:var(--font);background:none;border-top:none;border-left:none;border-right:none}
+.dc-tab:hover{color:var(--text2)}.dc-tab.active{color:var(--copper);border-bottom-color:var(--copper)}
+.dc-body{padding:10px 12px;font-size:10px;min-height:80px}
+.dc-close{position:absolute;top:4px;right:6px;background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;line-height:1}
+.alt-row{padding:6px 0;border-bottom:1px solid var(--border)}.alt-row:last-child{border:none}
+.alt-name{font-weight:500;font-size:10px;display:flex;justify-content:space-between}.alt-sel{color:var(--green);font-size:8px}
+.alt-detail{font-size:9px;color:var(--text3);margin-top:2px;line-height:1.4}
+.issue-item{padding:5px 0;border-bottom:1px solid var(--border);font-size:9px}.issue-item:last-child{border:none}
+.issue-sev{display:inline-block;padding:0 4px;border-radius:2px;font-size:7px;font-weight:600;font-family:var(--mono);margin-right:4px}
+.sev-high{background:rgba(220,38,38,0.1);color:var(--red)}.sev-med{background:rgba(180,83,9,0.1);color:var(--amber)}.sev-low{background:rgba(22,163,74,0.1);color:var(--green)}
+.issue-owner{font-family:var(--mono);font-size:7px;color:var(--text3);margin-top:2px}
+.rel-badge{position:absolute;padding:3px 7px;border-radius:4px;font-size:8px;font-family:var(--mono);background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.1);box-shadow:0 2px 6px rgba(0,0,0,0.08);transform:translate(-50%,4px);z-index:8;white-space:nowrap;opacity:0;transition:opacity 0.2s;cursor:pointer;pointer-events:auto}
+.rel-badge:hover{background:#fff;border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.12)}
+.rel-badge.vis{opacity:1}
+.impact-badge{position:absolute;padding:4px 8px;border-radius:4px;font-size:8px;font-family:var(--mono);background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.1);box-shadow:0 2px 6px rgba(0,0,0,0.08);transform:translate(-50%,4px);z-index:7;max-width:200px;opacity:0;transition:opacity 0.3s;line-height:1.4;pointer-events:auto}
+.impact-badge.vis{opacity:1}
+.impact-badge.crit{border-left:3px solid var(--red)}.impact-badge.warn{border-left:3px solid var(--amber)}.impact-badge.info{border-left:3px solid var(--blue)}
+.gantt-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,0.96);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;z-index:15;box-shadow:0 4px 20px rgba(0,0,0,0.1);width:480px;pointer-events:none}
+.gantt-card h4{font-size:10px;font-weight:600;color:var(--copper);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;font-family:var(--mono)}
+.gantt-row{display:flex;align-items:center;margin:3px 0;font-size:9px}
+.gantt-label{width:75px;flex-shrink:0;color:var(--text2);text-align:right;padding-right:8px;font-family:var(--mono);font-size:8px}
+.gantt-track{flex:1;height:14px;background:var(--bg2);border-radius:2px;position:relative;border:1px solid var(--border)}
+.gantt-bar{position:absolute;height:100%;border-radius:2px;display:flex;align-items:center;padding:0 4px;font-size:7px;font-weight:500;white-space:nowrap;overflow:hidden}
+.gantt-flag{position:absolute;width:0;height:100%;border-left:2px dashed var(--red);top:0}
+.gantt-flag-label{position:absolute;top:-10px;font-size:6px;color:var(--red);font-family:var(--mono);white-space:nowrap}
+.cogs-card{position:absolute;bottom:50px;right:10px;background:rgba(255,255,255,0.95);border:1px solid var(--border);border-radius:8px;padding:8px 12px;z-index:14;font-family:var(--mono);box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:all 0.3s}
+.cogs-val{font-size:18px;font-weight:700;letter-spacing:-0.02em}.cogs-label{font-size:8px;color:var(--text3)}.cogs-delta{font-size:10px;font-weight:600;margin-left:6px}
+.next-actions{margin-top:6px;font-size:9px}.next-act{display:flex;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}.next-act:last-child{border:none}
+.next-num{width:16px;height:16px;border-radius:50%;background:var(--copper);color:#fff;font-size:8px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.next-text{flex:1;line-height:1.4}.next-owner{font-size:8px;color:var(--text3);font-family:var(--mono)}
+.oir-toggle{display:inline-block;padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);font-size:9px;font-family:var(--font);color:var(--text2);cursor:pointer;margin-top:4px}
+.oir-toggle:hover{background:var(--bg3);color:var(--text)}
+.oir-body{display:none;margin-top:6px;font-size:9px;line-height:1.5}
+.oir-body.vis{display:block}
+.rel-badge .rel-type{display:inline-block;padding:0 4px;border-radius:2px;font-size:7px;font-weight:600;letter-spacing:0.03em;text-transform:uppercase;margin-right:3px}
+.rel-badge .rel-desc{color:var(--text2)}
+.leader-line{position:absolute;pointer-events:none;z-index:11}
+.rel-label{position:absolute;pointer-events:none;padding:1px 4px;border-radius:2px;font-size:7px;font-family:var(--mono);color:#fff;white-space:nowrap;transform:translate(-50%,-50%);z-index:13}
+.stat-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:500;font-family:var(--mono)}
+.stat-design{background:rgba(124,58,237,0.12);color:var(--purple)}
+.stat-proto{background:rgba(37,99,235,0.12);color:var(--blue)}
+.stat-fab{background:rgba(180,83,9,0.12);color:var(--amber)}
+.stat-prod{background:rgba(22,163,74,0.12);color:var(--green)}
+.stat-cots{background:rgba(85,85,85,0.12);color:#555}
+.hover-tip{position:absolute;pointer-events:none;padding:3px 8px;border-radius:4px;background:rgba(0,0,0,0.75);color:#fff;font-size:10px;font-family:var(--mono);white-space:nowrap;opacity:0;transition:opacity 0.1s;z-index:20}
+.float-card{position:absolute;pointer-events:none;background:rgba(255,255,255,0.94);border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:10px 12px;font-size:10px;max-width:240px;z-index:12;box-shadow:0 2px 8px rgba(0,0,0,0.08);transform:translate(-50%,-110%);opacity:0;transition:opacity 0.3s}
+.float-card.vis{opacity:1}
+.float-card h4{font-size:9px;font-weight:600;color:var(--copper);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;font-family:var(--mono)}
+.fc-val{font-family:var(--mono);font-size:14px;font-weight:600;margin:2px 0}
+.fc-sub{font-size:9px;color:var(--text3);line-height:1.4}
+.fc-row{display:flex;justify-content:space-between;padding:2px 0;font-size:10px}.fc-row .rl{color:var(--text2)}.fc-row .rv{font-family:var(--mono);font-weight:500}
+.float-card input[type=range]{pointer-events:auto;width:100%;accent-color:var(--copper);margin:4px 0}
+.float-card select,.float-card button{pointer-events:auto}
+.vp-compare{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:10px;z-index:15;display:none;gap:16px}
+.vp-compare h4{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}.cmp-col{min-width:100px}.cmp-active{border:2px solid var(--copper);border-radius:6px;padding:6px}
+.meas-label{position:absolute;padding:2px 6px;border-radius:3px;background:rgba(37,99,235,0.9);color:#fff;font-size:9px;font-family:var(--mono);pointer-events:none;transform:translate(-50%,-50%);z-index:15;white-space:nowrap}
+.chat{width:380px;flex-shrink:0;display:flex;flex-direction:column;background:#fafaf8;border-right:1px solid var(--border)}
+.chat-head{padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px}.chat-msgs::-webkit-scrollbar{width:3px}.chat-msgs::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+.chat-msg{margin:6px 0;padding:7px 10px;border-radius:8px;font-size:10.5px;line-height:1.5;max-width:92%}
+.msg-user{background:var(--bg3);margin-left:auto;text-align:right;border-radius:8px 8px 2px 8px}
+.msg-claude{background:#fff;border:1px solid var(--border);border-radius:8px 8px 8px 2px}
+.msg-mcp{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}
+.mcp-pill{padding:1px 5px;border-radius:3px;font-size:7px;font-weight:500;letter-spacing:0.03em}
+.mcp-sw{background:rgba(37,99,235,0.1);color:var(--blue)}.mcp-an{background:rgba(180,83,9,0.1);color:var(--amber)}.mcp-al{background:rgba(22,163,74,0.1);color:var(--green)}.mcp-sap{background:rgba(124,58,237,0.1);color:var(--purple)}.mcp-jira{background:rgba(13,148,136,0.1);color:var(--teal)}
+.chat-actions{padding:4px 10px;display:flex;flex-wrap:wrap;gap:4px}
+.chat-actions-bottom{padding:8px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px}
+.chat-act{font-family:var(--font);font-size:9px;padding:4px 8px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.chat-act:hover{background:var(--bg2);color:var(--text);border-color:var(--border2)}
+.chat-act.glow{animation:btn-glow 1.5s ease-in-out infinite;border-color:var(--copper)}
+@keyframes btn-glow{0%,100%{box-shadow:0 0 4px rgba(180,92,46,0.2)}50%{box-shadow:0 0 12px rgba(180,92,46,0.45)}}
+.typing{opacity:0.5;font-style:italic}
+.welcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.welcome-popup{background:#fff;border:1px solid var(--border2);border-radius:14px;padding:28px 32px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.18);text-align:center}
+.welcome-popup .wp-icon{width:36px;height:36px;border-radius:50%;background:var(--copperBg);border:1px solid rgba(180,92,46,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.welcome-popup h2{font-size:15px;font-weight:600;letter-spacing:-0.02em;color:var(--text);margin-bottom:8px;line-height:1.35}
+.welcome-popup p{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.welcome-popup button{padding:8px 22px;border-radius:8px;border:none;background:var(--copper);color:#fff;font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:opacity 0.15s}
+.welcome-popup button:hover{opacity:0.88}
+</style>
+</head>
+<body>
+
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-popup">
+    <div class="wp-icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--copper)" stroke-width="1.5"/><path d="M5 8.5l2 2 4-4" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2>What if Claude had spatial reasoning?</h2>
+    <p>Rotate the 3D model, click the annotations, and explore the chat prompts to see how Claude could reason spatially about a real product.</p>
+    <button onclick="document.getElementById('welcomeOverlay').style.display='none'">Explore the demo</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="logo"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>Claude <span>SpatialUI</span></div>
+  <div class="sep"></div>
+  <div class="tl">what if claude had a 3D viewer with spatial reasoning?</div>
+  <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
+  <nav class="topbar-nav">
+    <a href="why-3d.html">3D as Code</a>
+    <a href="roadmap.html">SpatialUI Roadmap</a>
+  </nav>
+</div>
+<div class="main">
+  <div class="chat">
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="chat-msg msg-claude"><strong>Claude Home</strong> — a smart speaker concept that runs a distilled Claude 3B parameter locally on an FPGA<br><br>
+      • Wall-mounted, passive-cooled speaker<br>
+      • 45 tok/s inference, no cloud required<br>
+      • $38 COGS at DVT, $89 MSRP target<br>
+      • Currently at <strong style="color:var(--blue)">EVT</strong> phase (200 units)<br><br>
+      <span style="font-size:9px;color:var(--text3)">This 3D view connects data from CAD, simulation, supply chain, and firmware. Click any annotation to explore — or use the prompts below.</span>
+      <div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sap">SAP</span></div></div>
+    <div class="chat-actions" id="chatActions"></div>
+    </div>
+    <div class="chat-actions-bottom" id="chatActionsBottom"></div>
+  </div>
+  <div class="viewport" id="vp">
+    <canvas id="cvs"></canvas>
+    <div class="vp-badge" id="badge"><span class="vp-dot"></span><span id="badgeL"></span></div>
+    <div class="vp-info" id="vpInfo">CLAUDE HOME · SMART SPEAKER</div>
+    <div class="hover-tip" id="hoverTip"></div>
+    <div class="ann-wrap" id="annWrap"></div>
+    <button class="vp-btn" id="explodeBtn" style="bottom:10px;right:10px" onclick="toggleExplode()">Explode view</button>
+    <button class="vp-btn" id="measureBtn" style="bottom:10px;right:110px" onclick="toggleMeasure()">Measure</button>
+    <button class="vp-btn" style="bottom:10px;right:210px" onclick="toggleShareMenu()">Share 3D model</button>
+    <div class="share-menu" id="shareMenu">
+      <button class="share-opt" onclick="showARPrompt()">View AR model on iPhone</button>
+      <button class="share-opt" onclick="exportUSDZ()">Export USDZ file</button>
+      <button class="share-opt" onclick="alert('Link copied to clipboard')">Copy shareable link</button>
+      <button class="share-opt" onclick="alert('Embedding code copied')">Embed in Confluence</button>
+    </div>
+    <button class="vp-btn" id="diffBtn" style="bottom:10px;right:340px" onclick="toggleVersionDiff()">Version diff</button>
+    <div class="vp-compare" id="compareCard"></div>
+    <div class="cogs-card" id="cogsCard" style="display:none"><div class="cogs-label">SYSTEM COGS</div><div><span class="cogs-val" id="cogsVal">$38</span><span class="cogs-delta" id="cogsDelta"></span></div><div class="cogs-label" id="cogsNote">DVT · 500 units</div></div>
+  </div>
+</div>
+
+<script>
+// ===== THREE.JS SETUP =====
+const VP=document.getElementById('vp'),canvas=document.getElementById('cvs');
+const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(34,VP.clientWidth/VP.clientHeight,0.1,500);
+const ren=new THREE.WebGLRenderer({canvas,antialias:true});
+ren.setSize(VP.clientWidth,VP.clientHeight);ren.setPixelRatio(Math.min(devicePixelRatio,2));
+ren.setClearColor(0xf0efec);ren.shadowMap.enabled=true;ren.shadowMap.type=THREE.PCFSoftShadowMap;
+scene.add(new THREE.AmbientLight(0xb0a898,0.6));
+const dl=new THREE.DirectionalLight(0xffffff,0.75);dl.position.set(10,15,12);dl.castShadow=true;scene.add(dl);
+scene.add(new THREE.DirectionalLight(0x8899aa,0.3).translateX(-8).translateY(6).translateZ(-10));
+
+// Materials
+const Mt={
+  cu:()=>new THREE.MeshStandardMaterial({color:0xc07840,roughness:0.25,metalness:0.85}),
+  hi:()=>new THREE.MeshStandardMaterial({color:0x3388ee,roughness:0.2,metalness:0.5,emissive:0x112244}),
+  warn:()=>new THREE.MeshStandardMaterial({color:0xcc8800,roughness:0.25,metalness:0.5,emissive:0x221100}),
+};
+const G=new THREE.Group(),cl=[];
+function ap(geo,mat,name,label,pos,rot){const m=new THREE.Mesh(geo,mat);m.position.set(...pos);if(rot)m.rotation.set(...rot);m.castShadow=true;m.receiveShadow=true;m.userData={name,label};G.add(m);cl.push(m);return m}
+
+// ===== GEOMETRY =====
+const PUCK_R=5.0,PUCK_H=1.5,DOME_R=PUCK_R,WALL=0.06,DOME_INNER=DOME_R-WALL,GAP=0.05;
+const BASE_Y=PUCK_H+DOME_R*0.2,HS_SIZE=DOME_R*0.7,HS_THICK=0.04,PIN_R=0.03;
+const halfH=PUCK_H/2;
+
+// Puck body
+const puckBotMat=new THREE.MeshStandardMaterial({color:0xf0f0ec,roughness:0.6,metalness:0.05});
+const puckBot=new THREE.Mesh(new THREE.CylinderGeometry(PUCK_R,PUCK_R,halfH,64,1,true),puckBotMat);
+puckBot.position.y=halfH/2;puckBot.castShadow=true;puckBot.userData={name:'dome',label:'Enclosure (lower)',pn:'CH-1001'};G.add(puckBot);cl.push(puckBot);
+const puckTopMat=new THREE.MeshStandardMaterial({color:0xf0f0ec,roughness:0.6,metalness:0.05});
+const puckTop=new THREE.Mesh(new THREE.CylinderGeometry(PUCK_R,PUCK_R,halfH,64,1,true),puckTopMat);
+puckTop.position.y=halfH+halfH/2;puckTop.castShadow=true;puckTop.userData={name:'dome',label:'Enclosure (upper)',pn:'CH-1001'};G.add(puckTop);cl.push(puckTop);
+const midDisc=new THREE.Mesh(new THREE.CircleGeometry(PUCK_R,64),new THREE.MeshStandardMaterial({color:0xe8e8e4,roughness:0.5,metalness:0.05,side:THREE.DoubleSide}));
+midDisc.rotation.x=-Math.PI/2;midDisc.position.y=halfH;midDisc.userData={name:'dome',label:'Mid plate',pn:'CH-1001'};G.add(midDisc);cl.push(midDisc);
+const bot=new THREE.Mesh(new THREE.CircleGeometry(PUCK_R,64),new THREE.MeshStandardMaterial({color:0xf0f0ec,roughness:0.6,metalness:0.05,side:THREE.DoubleSide}));
+bot.rotation.x=Math.PI/2;bot.position.y=0;bot.userData={name:'dome',label:'Bottom plate',pn:'CH-1001'};G.add(bot);cl.push(bot);
+
+// Magnet
+const magH=PUCK_H*0.05;
+const magnet=new THREE.Mesh(new THREE.CylinderGeometry(PUCK_R*0.92,PUCK_R*0.92,magH,64),new THREE.MeshStandardMaterial({color:0x555555,roughness:0.4,metalness:0.7}));
+magnet.position.y=magH/2+0.02;magnet.castShadow=true;magnet.userData={name:'magnet',label:'Magnet array (NdFeB)',pn:'CH-1004'};G.add(magnet);cl.push(magnet);
+
+// Battery
+const battH=PUCK_H*0.5;
+const batt=new THREE.Mesh(new THREE.CylinderGeometry(PUCK_R*0.92,PUCK_R*0.92,battH,64),new THREE.MeshStandardMaterial({color:0x111111,roughness:0.7,metalness:0.3}));
+batt.position.y=magH+0.02+battH/2;batt.castShadow=true;batt.userData={name:'battery',label:'Battery (3S1P 18650, 3000mAh)',pn:'CH-5001'};G.add(batt);cl.push(batt);
+
+// PCB
+const pcbH=PUCK_H*0.5-0.02;
+const pcb=new THREE.Mesh(new THREE.CylinderGeometry(PUCK_R*0.92,PUCK_R*0.92,pcbH,64),new THREE.MeshStandardMaterial({color:0x1a6b2c,roughness:0.6,metalness:0.2}));
+pcb.position.y=battH+0.02+pcbH/2;pcb.castShadow=true;pcb.userData={name:'internals',label:'PCB stack (FR4 8-layer + Qi coil)',pn:'CH-3001'};G.add(pcb);cl.push(pcb);
+
+// FPGA
+const fpgaW=PUCK_R*0.65,fpgaD=PUCK_R*0.65,fpgaH=0.2;
+const fpga=new THREE.Mesh(new THREE.BoxGeometry(fpgaW,fpgaH,fpgaD),new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.5,metalness:0.35}));
+fpga.position.y=PUCK_H+fpgaH/2;fpga.castShadow=true;fpga.userData={name:'fpga',label:'FPGA SOM (Kria K26)',pn:'SOM-K26'};G.add(fpga);cl.push(fpga);
+
+// Speakers
+const spkR2=0.5,spkH2=0.45,spkOff=(fpgaW/2+PUCK_R*0.92)/2*0.88,spkY2=PUCK_H+spkH2/2;
+const spkMeshes=[];
+[{p:[spkOff,spkY2,0],l:'Speaker R'},{p:[-spkOff,spkY2,0],l:'Speaker L'},{p:[0,spkY2,spkOff],l:'Speaker F'},{p:[0,spkY2,-spkOff],l:'Speaker B'}].forEach(s=>{
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(spkR2,spkR2,spkH2,24),new THREE.MeshStandardMaterial({color:0x2a2a2e,roughness:0.6,metalness:0.4}));
+  m.position.set(...s.p);m.castShadow=true;m.userData={name:'speaker',label:s.l+' (50mm)',pn:'CH-4001'};G.add(m);cl.push(m);spkMeshes.push(m);
+});
+
+// Heatsink
+const hsBaseY=PUCK_H+fpgaH,hsH=0.06;
+const hsMesh=new THREE.Mesh(new THREE.BoxGeometry(fpgaW,hsH,fpgaD),new THREE.MeshStandardMaterial({color:0xc07840,roughness:0.25,metalness:0.85}));
+hsMesh.position.y=hsBaseY+hsH/2;hsMesh.castShadow=true;hsMesh.userData={name:'hsbase',label:'Heatsink (C110 copper)',pn:'CH-2001'};G.add(hsMesh);cl.push(hsMesh);
+
+// Fins
+const DOME_SCALE_Y=0.3;
+let finMeshes=[],finType='pin';
+function buildFins(n,type){
+  finMeshes.forEach(f=>{G.remove(f);const i=cl.indexOf(f);if(i>-1)cl.splice(i,1)});finMeshes=[];finType=type||finType;
+  const baseTop=hsBaseY+hsH,pinArea=fpgaW*0.9,spacing=n>1?pinArea/(n-1):0,start=-pinArea/2,pr=0.04;
+  if(finType==='pin'){for(let r=0;r<n;r++)for(let c=0;c<n;c++){const px=start+c*spacing,pz=start+r*spacing,r2=px*px+pz*pz;
+    const rN=Math.sqrt(r2)/(fpgaW*0.5),fo=1-rN*rN*0.5,di=DOME_INNER*DOME_INNER-r2;if(di<=0)continue;
+    const dY=PUCK_H+DOME_SCALE_Y*Math.sqrt(di)-GAP,pH=Math.max(0,(dY-baseTop)*fo);if(pH<0.02)continue;
+    const m=new THREE.Mesh(new THREE.BoxGeometry(pr*2,pH,pr*2),Mt.cu());m.position.set(px,baseTop+pH/2,pz);m.castShadow=true;m._homeY=baseTop+pH/2;
+    m.userData={name:'fin',label:'Pin ['+r+','+c+']',pn:'CH-2001'};G.add(m);cl.push(m);finMeshes.push(m)}}
+  else{for(let i=0;i<n;i++){const pz=start+i*spacing,di=DOME_INNER*DOME_INNER-pz*pz;if(di<=0)continue;
+    const mH=PUCK_H+DOME_SCALE_Y*Math.sqrt(di)-GAP-baseTop;if(mH<0.02)continue;
+    const m=new THREE.Mesh(new THREE.BoxGeometry(pinArea,mH,0.03),Mt.cu());m.position.set(0,baseTop+mH/2,pz);m.castShadow=true;m._homeY=baseTop+mH/2;
+    m.userData={name:'fin',label:'Fin '+i,pn:'CH-2001'};G.add(m);cl.push(m);finMeshes.push(m)}}
+}
+buildFins(14,'pin');
+
+// Dome
+const domeGeo=new THREE.SphereGeometry(DOME_R,48,24,0,Math.PI*2,0,Math.PI/2);
+// Dome — plain white
+const domeMat=new THREE.MeshStandardMaterial({color:0xf0f0ec,roughness:0.8,metalness:0.05});
+const dome=new THREE.Mesh(domeGeo,domeMat);dome.position.y=PUCK_H;dome.scale.y=0.3;
+dome.userData={name:'dome',label:'Speaker grille',pn:'CH-1002'};G.add(dome);cl.push(dome);
+const domeWire=new THREE.Mesh(new THREE.SphereGeometry(0.01,4,4),new THREE.MeshBasicMaterial({visible:false}));
+domeWire.position.y=PUCK_H;domeWire.scale.set(1.002,0.301,1.002);G.add(domeWire);
+const edge=new THREE.Mesh(new THREE.TorusGeometry(DOME_R,WALL*0.8,8,48),new THREE.MeshStandardMaterial({color:0xe8e8e4,roughness:0.5,metalness:0.05}));
+edge.rotation.x=Math.PI/2;edge.position.y=PUCK_H;edge.userData={name:'dome',label:'Edge ring',pn:'CH-1003'};G.add(edge);cl.push(edge);
+
+// Anthropic logo disc on dome apex
+var logoCvs=document.createElement('canvas');logoCvs.width=256;logoCvs.height=256;
+var lCtx=logoCvs.getContext('2d');
+lCtx.clearRect(0,0,256,256);
+var lc=128;
+lCtx.strokeStyle='#d4703a';lCtx.lineCap='round';
+// Anthropic spark — asymmetric spokes, varying lengths and angles
+var rays=[
+  {a:-1.57,len:49,w:4.5},  // up
+  {a:1.57,len:42,w:4},     // down
+  {a:0,len:37,w:4},        // right
+  {a:3.14,len:39,w:4},     // left
+  {a:-0.85,len:36,w:3.2},  // upper-right
+  {a:-2.3,len:37,w:3.2},   // upper-left
+  {a:0.75,len:32,w:3.2},   // lower-right
+  {a:2.4,len:34,w:3.2},    // lower-left
+  {a:-0.35,len:29,w:3},    // right-up
+  {a:-1.95,len:31,w:3},    // left-up
+  {a:1.15,len:27,w:3},     // right-down
+  {a:2.85,len:26,w:3},     // left-down
+];
+lCtx.fillStyle='#d4703a';
+rays.forEach(function(r){
+  var cos=Math.cos(r.a),sin=Math.sin(r.a);
+  var px=-sin,py=cos;
+  var innerW=r.w*0.45,outerW=r.w*0.60;
+  lCtx.beginPath();
+  lCtx.moveTo(lc+px*innerW,lc+py*innerW);
+  lCtx.lineTo(lc+cos*r.len+px*outerW,lc+sin*r.len+py*outerW);
+  lCtx.lineTo(lc+cos*(r.len+outerW*0.4),lc+sin*(r.len+outerW*0.4));
+  lCtx.lineTo(lc+cos*r.len-px*outerW,lc+sin*r.len-py*outerW);
+  lCtx.lineTo(lc-px*innerW,lc-py*innerW);
+  lCtx.closePath();lCtx.fill();
+});
+// Center blob
+lCtx.fillStyle='#d4703a';
+lCtx.beginPath();lCtx.arc(lc,lc,10.8,0,Math.PI*2);lCtx.fill();
+var logoTex=new THREE.CanvasTexture(logoCvs);logoTex.premultiplyAlpha=true;
+var logoDisc=new THREE.Mesh(new THREE.CircleGeometry(1.8,32),new THREE.MeshBasicMaterial({map:logoTex,transparent:true,depthWrite:false}));
+logoDisc.rotation.x=-Math.PI/2;
+logoDisc.position.y=PUCK_H+DOME_R*0.3+0.01;
+G.add(logoDisc);
+
+scene.add(G);
+
+// ===== EXPLODE (from center outward) =====
+const EX_GAP=0.5;let exploded=false,exT=0;const exParts=[];
+function regEx(m,l,rx,rz){exParts.push({mesh:m,homeY:m.position.y,homeX:m.position.x,homeZ:m.position.z,layer:l,radX:rx||0,radZ:rz||0})}
+// Layers spread from center (0) outward: negative=down, positive=up
+regEx(bot,-4);regEx(puckBot,-3);regEx(magnet,-2);regEx(batt,-1);regEx(midDisc,0);regEx(pcb,1);regEx(puckTop,2);
+regEx(fpga,3);spkMeshes.forEach(s=>regEx(s,3,s.position.x*0.3,s.position.z*0.3));regEx(hsMesh,4);regEx(dome,5);regEx(edge,5);
+function toggleExplode(){exploded=!exploded;document.getElementById('explodeBtn').textContent=exploded?'Collapse':'Explode view';if(!exploded)clearCase1Glow()}
+var forceVisibleParts=[];
+function animateExplode(){const t=exploded?1:0;exT+=(t-exT)*0.08;if(Math.abs(exT-t)<0.001)exT=t;
+  const v=exT<0.1;puckBot.visible=v;puckTop.visible=v;bot.visible=v;midDisc.visible=v;dome.visible=v;edge.visible=v;domeWire.visible=v;
+  forceVisibleParts.forEach(function(m){m.visible=true});
+  exParts.forEach(p=>{p.mesh.position.y=p.homeY+p.layer*EX_GAP*exT;p.mesh.position.x=p.homeX+p.radX*exT;p.mesh.position.z=p.homeZ+p.radZ*exT});
+  finMeshes.forEach(f=>{if(f._homeY)f.position.y=f._homeY+4*EX_GAP*exT})}
+
+// ===== CAMERA =====
+let sph={t:0.5,p:0.85,r:21.6};
+function uc(){camera.position.set(sph.r*Math.sin(sph.p)*Math.cos(sph.t),sph.r*Math.cos(sph.p),sph.r*Math.sin(sph.p)*Math.sin(sph.t));camera.lookAt(0,PUCK_H*0.5,0)}
+uc();let drag=false,pm={x:0,y:0};
+canvas.addEventListener('mousedown',e=>{drag=true;pm={x:e.clientX,y:e.clientY}});
+window.addEventListener('mouseup',()=>drag=false);
+canvas.addEventListener('mousemove',e=>{if(!drag)return;sph.t-=(e.clientX-pm.x)*0.007;sph.p=Math.max(0.1,Math.min(2.5,sph.p+(e.clientY-pm.y)*0.007));pm={x:e.clientX,y:e.clientY};uc()});
+canvas.addEventListener('wheel',e=>{sph.r=Math.max(8,Math.min(35,sph.r+e.deltaY*0.015));uc()});
+
+// ===== INTERACTION =====
+const rc=new THREE.Raycaster(),mo=new THREE.Vector2();let selObj=null;
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();mo.x=((e.clientX-r.left)/r.width)*2-1;mo.y=-((e.clientY-r.top)/r.height)*2+1;
+  rc.setFromCamera(mo,camera);const h=rc.intersectObjects(cl,false);
+  if(h.length>0&&h[0].object.userData.name){if(measureMode){addMeasPoint(h[0].point,h[0].object.userData.label);return}selFeat(h[0].object)}});
+
+const origMats={dome:()=>domeMat.clone(),battery:()=>new THREE.MeshStandardMaterial({color:0x111111,roughness:0.7,metalness:0.3}),
+  internals:()=>new THREE.MeshStandardMaterial({color:0x1a6b2c,roughness:0.6,metalness:0.2}),fpga:()=>new THREE.MeshStandardMaterial({color:0x1a1a22,roughness:0.5,metalness:0.35}),
+  speaker:()=>new THREE.MeshStandardMaterial({color:0x2a2a2e,roughness:0.6,metalness:0.4}),hsbase:Mt.cu,fin:Mt.cu,
+  magnet:()=>new THREE.MeshStandardMaterial({color:0x555555,roughness:0.4,metalness:0.7})};
+function resetMats(){cl.forEach(c=>{const n=c.userData.name;if(c===dome)c.material=domeMat.clone();else if(c===puckBot)c.material=puckBotMat.clone();else if(c===puckTop)c.material=puckTopMat.clone();else if(origMats[n])c.material=origMats[n]()})}
+
+function selFeat(o){resetMats();selObj=o;document.getElementById('badge').classList.add('vis');document.getElementById('badgeL').textContent=o.userData.label;
+  if(o.userData.name!=='dome')o.material=Mt.hi()}
+
+// Hover
+let hovObj=null;const hoverTip=document.getElementById('hoverTip');
+const hoverMat=()=>new THREE.MeshStandardMaterial({color:0x55aaff,roughness:0.2,metalness:0.4,emissive:0x112233,emissiveIntensity:0.4,transparent:true,opacity:0.85});
+canvas.addEventListener('mousemove',e=>{if(drag)return;const r=canvas.getBoundingClientRect();const mx=((e.clientX-r.left)/r.width)*2-1,my=-((e.clientY-r.top)/r.height)*2+1;
+  rc.setFromCamera(new THREE.Vector2(mx,my),camera);const hits=rc.intersectObjects(cl,false);
+  const hit=hits.length>0&&hits[0].object.userData.name?hits[0].object:null;
+  if(hit!==hovObj){if(hovObj&&hovObj!==selObj){const n=hovObj.userData.name;if(origMats[n])hovObj.material=origMats[n]();else if(n==='dome'){if(hovObj===dome)hovObj.material=domeMat.clone();else hovObj.material=puckBotMat.clone()}}
+    hovObj=hit;if(hovObj&&hovObj!==selObj&&hovObj.userData.name!=='dome')hovObj.material=hoverMat()}
+  if(hovObj&&hovObj.userData.name!=='dome'){hoverTip.textContent=hovObj.userData.label;hoverTip.style.left=(e.clientX-r.left+12)+'px';hoverTip.style.top=(e.clientY-r.top-8)+'px';hoverTip.style.opacity='1';canvas.style.cursor='pointer'}
+  else{hoverTip.style.opacity='0';canvas.style.cursor=drag?'grabbing':'grab'}});
+
+// ===== THERMAL =====
+function tempToColor(t,tMin,tMax){const f=Math.max(0,Math.min(1,(t-tMin)/(tMax-tMin)));
+  const r=f<0.5?Math.round(0x22+f*2*(0xcc-0x22)):0xcc,g=f<0.5?Math.round(0xaa+f*2*(0x88-0xaa)):Math.round(0x88-(f-0.5)*2*(0x88-0x33)),b=f<0.5?Math.round(0x55-f*2*0x55):0x33;
+  return new THREE.Color(r/255,g/255,b/255)}
+function applyThermalColors(r){const col=tempToColor(r.Tj,40,90),em=col.clone().multiplyScalar(0.3);
+  hsMesh.material=new THREE.MeshStandardMaterial({color:col,roughness:0.3,metalness:0.6,emissive:em,emissiveIntensity:0.5});
+  finMeshes.forEach(m=>{m.material=new THREE.MeshStandardMaterial({color:col,roughness:0.3,metalness:0.6,emissive:em,emissiveIntensity:0.5})});
+  const fc=tempToColor(r.Tj+5,40,90);fpga.material=new THREE.MeshStandardMaterial({color:fc,roughness:0.4,metalness:0.3,emissive:fc.clone().multiplyScalar(0.3),emissiveIntensity:0.5});
+  const bt=28+r.Tj*0.12,bc=tempToColor(bt,25,50);batt.material=new THREE.MeshStandardMaterial({color:bc,roughness:0.5,metalness:0.3,emissive:bc.clone().multiplyScalar(0.2),emissiveIntensity:0.3})}
+
+function thermalCalc(Q,Tjmax,Tamb,nPerRow,ftype){const k=385,tBase=0.0015,hsSize=0.032,Abase=hsSize*hsSize;let h=8;
+  const avgPinH=ftype==='pin'?0.018:0.022,pinR2=ftype==='pin'?0.0006:0.0004,nTotal=ftype==='pin'?Math.round(nPerRow*nPerRow*0.78):nPerRow;
+  const m2=Math.sqrt(2*h/(k*pinR2*2)),mL=m2*avgPinH,eta=mL>0?Math.tanh(mL)/mL:1;
+  const Afin=nTotal*(ftype==='pin'?Math.PI*pinR2*2*avgPinH:2*avgPinH*hsSize*0.85)*eta;
+  const sp=nPerRow>1?hsSize*0.85/(nPerRow-1)-pinR2*2:0.05;let sf=1;if(sp<0.002)sf=0.25;else if(sp<0.003)sf=0.5;else if(sp<0.005)sf=0.8;
+  const Aeff=Afin*sf+Abase,Rconv=1/(h*Aeff),Rbase=tBase/(k*Abase),Rjc=0.5,Rtim=0.04,Rspread=0.08;
+  const Rhs=Rbase+Rconv,Rtot=Rjc+Rtim+Rhs+Rspread,Tj=Tamb+Q*Rtot,Rreq=(Tjmax-Tamb)/Q;
+  return{Rtot,Rreq,Tj,eta,Aeff,h,sp:sp*1000,sf,Rjc,Rtim,Rhs,Rspread,margin:Tjmax-Tj,nTotal}}
+
+// ===== PARTS =====
+const PARTS={dome:{pn:'CH-1003',name:'Dome enclosure',cost:2.50,lead:'3wk',vendor:'Apex CNC',mcp:['Solidworks'],
+    rels:[{to:'hsbase',type:'thermal',label:'Chimney airflow',explain:'The dome acts as a passive chimney for the heatsink. Warm air rises through the dome cavity and exits through the perforated grille. <strong>Risk:</strong> If dome venting is insufficient, heatsink effectiveness drops 30-40%. Validate airflow path with CFD at EVT.'},
+      {to:'speaker',type:'acoustic',label:'Sound projection',explain:'Speakers project through the dome grille. The grille\'s perforation pattern (40% open area) is tuned to minimize acoustic filtering above 2kHz. <strong>Risk:</strong> Grille hole size vs. dust ingress tradeoff — smaller holes protect but attenuate highs.'}]},
+  internals:{pn:'CH-3001',name:'PCB stack',cost:3.50,lead:'3wk',vendor:'PCBWay',mcp:['Altium','Solidworks'],
+    rels:[{to:'fpga',type:'electrical',label:'BGA interface',explain:'The K26 SOM connects via 676-ball BGA at 0.8mm pitch. This is the densest interface in the assembly. <strong>Risk:</strong> Reflow profile must be tightly controlled — peak temp ±3°C. X-ray AOI required. Yield target >95%.'},
+      {to:'battery',type:'power',label:'Power rails + Qi charge',explain:'7 power rails from battery through PCB (0.85V core to 12V input). Qi 15W wireless charging coil integrated on PCB layers 7-8 (WPC 1.3 compliant) charges the battery when wall-mounted. <strong>Risk:</strong> Qi coil EMI coupling to FPGA — maintain 5mm clearance from BGA thermal vias. Voltage droop during inference burst (15W) could cause FPGA instability. Add bulk caps near SOM.'},
+      {to:'speaker',type:'signal',label:'I2S audio bus',explain:'Digital audio via I2S bus from FPGA through PCB to speaker DAC. 3.3V signaling. <strong>Risk:</strong> EMI from FPGA switching noise coupling into audio traces. Route I2S on inner layers with ground guard traces.'}]},
+  fpga:{pn:'SOM-K26',name:'FPGA SOM',cost:12,lead:'16wk',vendor:'AMD',mcp:['Altium','ANSYS'],
+    rels:[{to:'hsbase',type:'thermal',label:'TIM thermal path',explain:'FPGA dissipates 12-15W through a 26×26mm TIM pad to the heatsink. R_jc = 0.5°C/W (fixed). The TIM (Shin-Etsu 6 W/mK) must be compressed to 0.15-0.50mm. <strong>Risk:</strong> If TIM gap exceeds spec, thermal resistance spikes and FPGA throttles. This is the #1 thermal-mechanical coupling.'},
+      {to:'internals',type:'electrical',label:'BGA mount',explain:'676-ball BGA soldered to carrier PCB. The FPGA is the highest-value component on the board at $12. <strong>Risk:</strong> BGA rework costs ~$4/board. Yield below 95% adds $400+ to DVT cost.'},
+      {to:'speaker',type:'signal',label:'I2S + I2C',explain:'Audio output via I2S (data) and speaker control via I2C (volume, EQ). FPGA runs audio DSP pipeline on APU cores. <strong>Risk:</strong> FPGA switching noise at 300MHz can couple into audio path. Need 10mm clearance between PL power and audio traces.'},
+      {to:'battery',type:'thermal',label:'Heat coupling 12%',explain:'~12% of FPGA thermal load conducts through PCB to battery via thermal vias and copper planes. At sustained 15W, battery temp rises ~5°C above ambient. <strong>Risk:</strong> LiPo degradation accelerates above 40°C. If ambient is 35°C+, battery hits 40°C and loses 20% capacity/year. Consider thermal break.'}]},
+  hsbase:{pn:'CH-2001',name:'Copper heatsink',cost:4.50,lead:'4wk',vendor:'ThermalTech',mcp:['Solidworks','ANSYS'],
+    rels:[{to:'fpga',type:'thermal',label:'TIM interface',explain:'Heatsink base plate contacts FPGA via TIM pad. Flatness spec: 0.015mm. The curved dome-following fin geometry makes this a complex machining operation. <strong>Risk:</strong> First articles showing 0.08mm deviation — within spec but Cpk is marginal. Process control critical.'},
+      {to:'dome',type:'thermal',label:'Chimney exhaust',explain:'Heatsink fins dissipate into the dome cavity. Natural convection (h ≈ 8 W/m²K) drives airflow upward through the dome. Fin-to-dome clearance is 0.10mm nominal. <strong>Risk:</strong> If dome is dented or warped, fins contact dome → thermal short to enclosure → user-touchable surface exceeds 43°C.'},
+      {to:'fin',type:'mechanical',label:'Integral fins',explain:'Fins are machined integral to the base plate (single piece CNC). 14×14 grid, dome-following heights. <strong>Risk:</strong> Each additional fin adds $0.12 and 1.5min CNC time. Fin count is the primary cost-performance lever.'}]},
+  fin:{pn:'CH-2001',name:'Copper heatsink',cost:4.50,lead:'4wk',vendor:'ThermalTech',mcp:['Solidworks','ANSYS'],
+    rels:[{to:'hsbase',type:'mechanical',label:'Base plate',explain:'Fins are integral to the heatsink base plate — machined from a single C110 copper billet. Cannot be separated. <strong>Risk:</strong> If a fin is damaged during assembly, the entire heatsink must be scrapped ($4.50).'},
+      {to:'dome',type:'clearance',label:'0.10mm gap',explain:'Fin tips must maintain 0.10mm clearance to dome inner surface. Tolerance chain: dome radius + heatsink height + mounting = Cpk 1.36. <strong>Risk:</strong> 0.6% of units may have fin-dome contact → acoustic buzz at speaker frequencies. 100% end-of-line clearance check recommended.'}]},
+  speaker:{pn:'CH-4001',name:'Speaker drivers',cost:3.50,lead:'8wk',vendor:'Harman',mcp:['Solidworks'],
+    rels:[{to:'fpga',type:'signal',label:'I2S audio',explain:'Digital audio from FPGA APU via I2S bus. FPGA handles wake-word detection, voice processing, and TTS output. <strong>Risk:</strong> EMI from FPGA PL switching (300MHz) can couple into speaker signal path. Shielding or filtering may be needed if audio SNR drops below 80dB.'},
+      {to:'dome',type:'acoustic',label:'Grille projection',explain:'Sound projects through dome perforations. Grille acts as acoustic filter — 40% open area tuned for minimal high-frequency rolloff. <strong>Risk:</strong> Grille perforation pattern affects both acoustics and aesthetics. ID and acoustics teams must align on hole size/pattern.'},
+      {to:'internals',type:'signal',label:'DAC interface',explain:'PCB carries DAC (TI PCM5102A) between FPGA I2S output and speaker amplifier. Analog section is sensitive to noise. <strong>Risk:</strong> Ground loop between digital and analog sections. Star ground topology required on PCB layout.'},
+      {to:'magnet',type:'signal',label:'Magnetic interference',explain:'Wall-mount magnet array (NdFeB, 0.3T surface field) is 40mm below speakers. Stray field at speaker position: ~2mT. This biases the neodymium voice coil asymmetrically. <strong>Risk:</strong> 2nd harmonic distortion increases from 0.8% to 2.1% THD at 100Hz — audible on bass-heavy content. <strong>Mitigation:</strong> Steel shielding plate ($0.15), increased separation, or DSP compensation. Acoustics team must validate at EVT with magnets installed.'}]},
+  battery:{pn:'CH-5001',name:'Battery pack',cost:3.50,lead:'6wk',vendor:'LG Chem',mcp:['SAP','Jira'],
+    rels:[{to:'internals',type:'power',label:'11.1V supply',explain:'Battery provides 11.1V nominal (9.9-12.6V range) to PCB power management IC. Buck/boost converters generate all voltage rails. <strong>Risk:</strong> At 15W sustained + 2W system overhead, battery lasts ~1.8 hours. Users may expect longer cordless runtime. PM decision: optimize for runtime or accept as wall-powered-primary.'},
+      {to:'fpga',type:'thermal',label:'Heat coupling',explain:'~12% of FPGA heat conducts through PCB copper to battery. At sustained mode, battery reaches ~40°C. <strong>Risk:</strong> Accelerated capacity fade. At 45°C: 20% capacity loss/year. Thermal gap pad (Bergquist 3.5 W/mK) between PCB and battery helps but doesn\'t eliminate coupling.'},
+      {to:'magnet',type:'mechanical',label:'Stack contact',explain:'Battery sits directly above magnet array in the assembly stack. Magnet pull force (5.2kg) compresses the stack. <strong>Risk:</strong> Low — mechanical interface is simple. Drop test validated at 1.5× safety factor.'}]},
+  magnet:{pn:'CH-1004',name:'Magnet array',cost:1.50,lead:'2wk',vendor:'K&J Magnetics',mcp:['Solidworks'],
+    rels:[{to:'battery',type:'mechanical',label:'Stack below',explain:'Magnet array sits at the bottom of the assembly stack, below the battery. Provides wall-mount pull force. <strong>Risk:</strong> NdFeB magnets are brittle — drop impact could crack magnets. Validated at 1m drop onto hardwood.'},
+      {to:'dome',type:'mechanical',label:'Wall mount',explain:'Magnets interface with steel wall bracket for mounting. 5.2kg pull force holds the 380g product with 13× safety factor. <strong>Risk:</strong> Magnetic field may interfere with compass/magnetometer in nearby devices. Keep >15cm from phones. Add warning to user manual.'},
+      {to:'speaker',type:'signal',label:'Magnetic interference',explain:'NdFeB magnets produce a static field of ~0.3T at surface. Speaker drivers use neodymium voice coil magnets that are sensitive to external fields. At 40mm separation (current stack height), stray field is ~2mT at speaker position. <strong>Risk:</strong> Stray field biases the speaker voice coil, causing asymmetric excursion → 2nd harmonic distortion at low frequencies (below 200Hz). Measured THD increase: 0.8% → 2.1% at 100Hz. <strong>Mitigation:</strong> Add a 0.5mm steel shielding plate between magnet array and battery ($0.15/unit) or increase vertical separation by 10mm. FW DSP compensation possible but adds latency.'}]}};
+
+// Geometry types for optimization
+const geoTypes=[{id:'pin',label:'Pin fins (CNC)',color:'#b45c2e',opt:14},{id:'fin',label:'Plate fins',color:'#2563eb',opt:10},{id:'am',label:'AM lattice',color:'#7c3aed',opt:16},{id:'skive',label:'Skived',color:'#0d9488',opt:12}];
+function geoRtotal(type,n,Q,Ta){if(type==='pin')return thermalCalc(Q,85,Ta,n,'pin').Rtot;
+  if(type==='fin')return thermalCalc(Q,85,Ta,n,'fin').Rtot*1.12;
+  if(type==='am'){const b=thermalCalc(Q,85,Ta,14,'pin').Rtot*0.65;return b+Math.abs(n-16)*0.008}
+  if(type==='skive'){const r=thermalCalc(Q,85,Ta,n,'pin');return r.Rtot*(n<=12?0.92:1+(n-12)*0.02)}
+  return thermalCalc(Q,85,Ta,n,'pin').Rtot}
+
+// ===== FLOAT CARDS =====
+const floatCards=[];
+function addFloatCard(id,mesh,oy,html){removeFloatCard(id);const el=document.createElement('div');el.className='float-card';el.id='fc-'+id;el.innerHTML=html;
+  document.getElementById('vp').appendChild(el);setTimeout(()=>el.classList.add('vis'),50);floatCards.push({id,el,mesh,oy})}
+function removeFloatCard(id){const i=floatCards.findIndex(c=>c.id===id);if(i>-1){floatCards[i].el.remove();floatCards.splice(i,1)}}
+function clearFloatCards(){floatCards.forEach(c=>c.el.remove());floatCards.length=0}
+function updateFloatCards(){const w=canvas.clientWidth,h=canvas.clientHeight;
+  floatCards.forEach(c=>{const pos=new THREE.Vector3();c.mesh.getWorldPosition(pos);pos.y+=c.oy;const p=pos.clone().project(camera);
+    if(p.z>1){c.el.style.opacity='0';return}c.el.style.left=((p.x*0.5+0.5)*w)+'px';c.el.style.top=((-p.y*0.5+0.5)*h)+'px';
+    if(!c.el.classList.contains('vis'))c.el.classList.add('vis')})}
+
+// ===== CHAT =====
+function chatMsg(role,text){var el=document.createElement('div');el.className='chat-msg msg-'+role;el.innerHTML=text;
+  var container=document.getElementById('chatMsgs');var acts=document.getElementById('chatActions');
+  container.insertBefore(el,acts);container.scrollTop=9999;return el}
+
+// ===== DETAIL CARDS ON ANNOTATION CLICK =====
+const PH='<span style="color:var(--blue);font-weight:500">EVT</span>';
+const R=function(l,v){return '<div class="fc-row"><span class="rl">'+l+'</span><span class="rv">'+v+'</span></div>'};
+const RS=function(l,v,c){return '<div class="fc-row"><span class="rl">'+l+'</span><span class="rv" style="color:var(--'+c+')">'+v+'</span></div>'};
+const SUB=function(t){return '<div class="fc-sub" style="margin-top:4px">'+t+'</div>'};
+const ALT=function(n,sel,d){return '<div class="alt-row"><div class="alt-name">'+n+(sel?' <span class="alt-sel">SELECTED</span>':'')+'</div><div class="alt-detail">'+d+'</div></div>'};
+const ISS=function(sev,title,desc,owner){return '<div class="issue-item"><span class="issue-sev sev-'+sev+'">'+sev.toUpperCase()+'</span><strong>'+title+'</strong>'+SUB(desc)+'<div class="issue-owner">Owner: '+owner+'</div></div>'};
+const SB=function(cls,label){return '<span class="stat-badge stat-'+cls+'">'+label+'</span>'};
+const CHK=function(label,ok){return '<div class="fc-row"><span class="rl">'+label+'</span><span class="rv" style="color:var(--'+(ok?'green':'red')+')">'+( ok?'✓':'✗')+'</span></div>'};
+const DETAIL={
+  battery:{tabs:['Overview','Status','DFM','Alts','Issues'],content:{
+    Overview:R('PN','CH-5001 rev B')+R('Type','3S1P 18650 LiPo')+R('Capacity','3000mAh / 11.1V')+R('Vendor','LG Chem')+R('Cost','$3.50')+R('Lead','6 wk'),
+    Status:R('Owner','Sarah Chen · HW Eng')+R('Last rev','B — Mar 2026')+R('Stage',SB('proto','Prototype'))+R('2D drawing',RS('DWG-5001-B','Released','green'))+R('BOM status',RS('Approved','In AVL','green'))+CHK('Vendor DFM approved',true)+CHK('Proto units received',true)+CHK('EVT test complete',false),
+    DFM:RS('DFM','Pass','green')+RS('DFR','Review','amber')+SUB('Thermal coupling raises cell to ~40°C at sustained. Gap pad mitigates. UL 62368-1 requires BMS with OVP/UVP/OCP.'),
+    Alts:ALT('LG Chem INR18650-MJ1',true,'3000mAh · $3.50 · 6wk · Proven reliability')+ALT('Samsung 35E',false,'3500mAh · $3.20 · 4wk · Higher capacity, higher impedance. BMS requal needed.')+ALT('Molicel P28A',false,'2800mAh · $2.80 · 3wk · Best thermal, 7% less capacity. Good cost-down.'),
+    Issues:ISS('med','Thermal coupling at sustained','Cell temp ~40°C at 15W. Capacity degradation risk.','HW eng · EVT thermal chamber')+ISS('low','BMS IC lead time','TI BQ25792 has 8-wk lead. Buffer stock recommended.','Supply chain · Order at EVT'),
+    Phase:R('Phase',PH)+R('Rev','B (added BMS OCP)')+R('EVT action','Thermal chamber test')+R('DVT gate','Cycle life validation')}},
+  internals:{tabs:['Overview','Status','DFM','Alts','Issues'],content:{
+    Overview:R('PN','CH-3001 rev C')+R('Layers','8-layer FR4, ENIG')+R('Size','100 × 80mm')+R('Wireless charging','Qi 15W (WPC 1.3), integrated coil on Layer 7-8')+R('Vendor','PCBWay')+R('Cost','$3.50 + $5 assy'),
+    Status:R('Owner','James Park · HW Eng')+R('Last rev','C — Feb 2026')+R('Stage',SB('fab','Fabrication'))+R('2D drawing',RS('DWG-3001-C','Released','green'))+R('BOM status',RS('Approved','In AVL','green'))+CHK('Vendor DFM approved',true)+CHK('Proto units received',true)+CHK('EVT test complete',false),
+    DFM:RS('DFA','Review','amber')+RS('DFT','Pass','green')+SUB('K26 BGA (676 balls, 0.8mm pitch) needs X-ray AOI. Target >95% first-pass yield. JTAG accessible. Qi coil on L7-8 — keep 5mm clearance from BGA thermal vias.'),
+    Alts:ALT('PCBWay (Shenzhen)',true,'$3.50/board · 3wk · X-ray AOI, BGA capable')+ALT('JLCPCB',false,'$2.80/board · 2wk · Lower cost, BGA yield unproven at 0.8mm pitch')+ALT('Flex (US)',false,'$7/board · 5wk · Domestic, ISO 13485. De-risks yield.'),
+    Issues:ISS('med','BGA yield unknown','First run with K26 BGA. Could drop below 95%.','HW eng · X-ray 100% at EVT')+ISS('low','EMI pre-scan needed','High-speed FPGA traces. Pre-scan before cert.','HW eng · Schedule at EVT')+ISS('low','Qi coil EMI coupling','Wireless charging coil on L7-8 may couple to BGA thermal vias. Maintain 5mm clearance.','HW eng · EMI scan at EVT'),
+    Phase:R('Phase',PH)+R('Rev','C (power rail fix)')+R('EVT action','BGA yield measurement')+R('DVT gate','Yield >95%, EMI pre-scan')}},
+  fpga:{tabs:['Overview','Status','DFM','Alts','Issues'],content:{
+    Overview:R('PN','SOM-K26 (AMD)')+R('Part','XCZU5EV · 26mm BGA')+R('Inference','45 tok/s @ 12W')+RS('Cost','$12 (32% of BOM)','red')+RS('Lead','16 weeks','red'),
+    Status:R('Owner','Mike Torres · FW Eng')+R('Last rev','v1.1 (AMD stock)')+R('Stage',SB('cots','COTS Module'))+R('2D drawing',RS('N/A','Vendor datasheet','text3'))+R('BOM status',RS('Approved','Long-lead ordered','amber'))+CHK('Vendor DFM approved',true)+CHK('PO placed',true)+CHK('Units received',false),
+    DFM:RS('DFT','JTAG OK','green')+RS('DFR','Risk','red')+SUB('Single-source (AMD). Clock gating saves 3.6W → 11°C. DFX partial reconfig in 50ms. R_jc = 0.5 °C/W fixed.'),
+    Alts:ALT('AMD Kria K26',true,'$12 · 16wk · 45 tok/s · Best Claude perf, proven DPU overlay')+ALT('AMD Kria K24',false,'$8 · 12wk · ~30 tok/s · Needs model re-opt. Saves $4/unit.')+ALT('Microchip PolarFire SoM',false,'$10 · 10wk · ~25 tok/s · Lower power (8W), diff toolchain. 8-wk FW port.'),
+    Issues:ISS('high','Single-source dependency','AMD only. 16-wk lead + customs risk. No drop-in alt.','Supply chain · Eval PolarFire at DVT')+ISS('high','Cost — 32% of BOM','$12/unit. K24 saves $4 but costs 15 tok/s.','PM · Model opt to enable K24')+ISS('med','Thermal throttle at sustained','15W → T_j near 85°C. Clock gating + DFX mitigate.','FW eng · Throttle policy at EVT'),
+    Phase:R('Phase',PH)+R('Rev','SOM v1.1 (stock)')+RS('PO','200 units ordered','green')+R('EVT action','DPU overlay bring-up')+R('DVT gate','Model opt, 2nd source eval')}},
+  hsbase:{tabs:['Overview','Status','DFM','Alts','Issues'],content:{
+    Overview:R('PN','CH-2001 rev A')+R('Material','C110 copper, Ni plated')+R('Fins','14 pins (optimum)')+R('Method','5-axis CNC')+R('Cost','$4.50/unit')+R('Vendor','ThermalTech'),
+    Status:R('Owner','Sarah Chen · HW Eng')+R('Last rev','A — Jan 2026')+R('Stage',SB('proto','Prototype'))+R('2D drawing',RS('DWG-2001-A','In review','amber'))+R('BOM status',RS('Pending','Awaiting CMM data','amber'))+CHK('Vendor DFM approved',false)+CHK('First articles received',false)+CHK('EVT test complete',false),
+    DFM:RS('DFM','Review','amber')+RS('DFR','Review','amber')+SUB('PCD tooling req. Min fin 1.2mm, spacing 2.5mm. Anneal before plating. Cpk 1.36.')+SUB('<strong>Cost-down:</strong> Skived at PVT ($2.20) if forming qual passes.'),
+    Alts:ALT('ThermalTech — 5-axis CNC',true,'$4.50 · 4wk · ±0.05mm · Proven for curved geometry')+ALT('Protolabs — Metal AM',false,'$15 · 8wk · TPMS lattice, 2.5× area. Premium SKU only.')+ALT('Asia Thermal — Skived',false,'$2.20 · 6wk · Lowest cost. Forming risk on curved fins.')+ALT('CopperCool — CNC backup',false,'$5 · 3wk · Second source. 2wk qualification.'),
+    Issues:ISS('med','First article flatness','0.08mm vs 0.015mm spec. In spec but tight. 5 units pending CMM.','HW eng · CMM all 10, eval Cpk')+ISS('med','Plating adhesion','CNC residual stress may cause Ni delam. Anneal required.','Quality · Add anneal to process spec')+ISS('low','Single-source for DVT','Only ThermalTech qualified. CopperCool as backup.','Supply chain · Start qual at EVT'),
+    Phase:R('Phase',PH)+R('Rev','A (first article)')+RS('Status','5 of 10 received','amber')+R('EVT action','Thermal val, CMM')+R('DVT gate','Cpk confirmed, plating qual')}},
+  speaker:{tabs:['Overview','Status','DFM','Alts','Issues'],content:{
+    Overview:R('PN','CH-4001 rev A')+R('Count','4× full-range')+R('Driver','50mm neodymium')+R('Freq','80Hz–20kHz')+R('Vendor','Harman')+R('Cost','$3.50 (×2 pair)'),
+    Status:R('Owner','Lisa Nguyen · Acoustics')+R('Last rev','A — Dec 2025')+R('Stage',SB('proto','Prototype'))+R('2D drawing',RS('DWG-4001-A','Released','green'))+R('BOM status',RS('Approved','In AVL','green'))+CHK('Vendor DFM approved',true)+CHK('Samples validated',true)+CHK('Acoustic tuning done',false),
+    DFM:RS('DFM','Pass','green')+RS('DFR','Review','amber')+SUB('Fin resonance 2.1kHz above crossover. Gasket seal OK. Passive rad rear-fires.'),
+    Alts:ALT('Harman 50F-ND',true,'$0.85/ea · 8wk · 80Hz–20kHz · 82dB · Rich midrange')+ALT('Tang Band W2-803SM',false,'$0.65/ea · 4wk · 90Hz–20kHz · 84dB · Brighter, less bass')+ALT('Peerless PLS-P830985',false,'$1.20/ea · 6wk · 70Hz–22kHz · 80dB · Best bass, premium')+ALT('Dayton CE50-4',false,'$0.40/ea · 2wk · 100Hz–18kHz · 79dB · Budget only'),
+    Issues:ISS('med','EOL risk in 18 months','Harman may discontinue. LTB decision at PVT.','Supply chain · Qualify Tang Band backup')+ISS('low','Per-unit DSP tuning','Acoustic response varies with assembly tol.','FW eng · Auto-EQ calibration routine'),
+    Phase:R('Phase',PH)+R('Rev','A')+RS('Status','Samples validated','green')+R('EVT action','Acoustic tuning in enclosure')+R('DVT gate','DSP EQ finalized')}},
+  magnet:{tabs:['Overview','Status','Alts','Issues'],content:{
+    Overview:R('PN','CH-1004 rev A')+R('Type','NdFeB N42')+R('Pull','5.2 kg')+R('Vendor','K&J Magnetics')+R('Cost','$1.50'),
+    Status:R('Owner','Sarah Chen · HW Eng')+R('Last rev','A — Nov 2025')+R('Stage',SB('prod','Production-ready'))+R('2D drawing',RS('DWG-1004-A','Released','green'))+R('BOM status',RS('Approved','In AVL','green'))+CHK('Vendor DFM approved',true)+CHK('Drop test validated',true),
+    Alts:ALT('K&J Magnetics N42',true,'$1.50 · 2wk · 5.2kg pull · US stock')+ALT('Tengye N45 (China)',false,'$0.75 · 6wk · 5.8kg pull · Cheaper, tariff risk'),
+    Issues:ISS('low','Drop test margin','1m drop validated at 1.5× safety factor.','Quality · Re-test at DVT')}},
+  fin:{tabs:['Overview','Status','DFM','Issues'],content:{
+    Overview:R('PN','CH-2001 (sub-feature)')+R('Type','Square pin, dome-following')+R('Count','~120 (14×14, clipped)')+R('Per-fin cost','~$0.12 CNC'),
+    Status:R('Owner','Sarah Chen · HW Eng')+R('Last rev','A (with base plate)')+R('Stage',SB('design','Design iteration'))+R('2D drawing',RS('DWG-2001-A','In review','amber'))+CHK('Fin count finalized',false)+CHK('Thermal validated',false),
+    DFM:SUB('Min 1.2mm thick, 2.5mm spacing. Height follows dome curvature. PCD tooling. Spring finish passes.'),
+    Issues:ISS('med','Fin count vs thermal vs cost','14 is computed optimum. Each fin = $0.12 + 1.5min.','HW eng · Validate at EVT thermal test')}}
+};
+let activeDetail=null;
+let relLines=[];let relLabels=[];let relBadges=[];
+const REL_COLORS={thermal:'#cc3333',electrical:'#2563eb',signal:'#7c3aed',power:'#b45309',mechanical:'#555555',acoustic:'#0d9488',clearance:'#dc4a3a'};
+
+function getMeshByName(name){return cl.find(c=>c.userData.name===name)}
+
+function showDetail(partName,annEl){
+  closeDetail();
+  const d=DETAIL[partName];if(!d)return;
+  const ann=annotations.find(a=>a.mesh.userData.name===partName);if(!ann)return;
+  const pm=PARTS[partName];
+  let tabsHtml=d.tabs.map((t,i)=>'<button class="dc-tab'+(i===0?' active':'')+'" onclick="switchDetailTab(this,\''+partName+'\',\''+t+'\')">'+t+'</button>').join('');
+  const html='<button class="dc-close" onclick="closeDetail()">×</button><div class="dc-tabs">'+tabsHtml+'</div><div class="dc-body" id="dc-body">'+d.content[d.tabs[0]]+'</div>';
+  const el=document.createElement('div');el.className='detail-card';el.id='detail-active';el.innerHTML=html;
+  document.getElementById('vp').appendChild(el);
+  // Leader line SVG
+  const leader=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  leader.setAttribute('class','leader-line');leader.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:11';
+  leader.innerHTML='<line id="leader-l" stroke="rgba(0,0,0,0.15)" stroke-width="1" stroke-dasharray="3 2"/>';
+  document.getElementById('vp').appendChild(leader);
+  activeDetail={el,mesh:ann.mesh,oy:ann.oy,ang:ann.ang,partName,leader};
+  // Draw 3D relationship lines
+  showRelationshipLines(partName,ann.mesh);
+}
+
+function showRelationshipLines(partName,srcMesh){
+  clearRelLines();
+  const part=PARTS[partName];if(!part||!part.rels)return;
+  part.rels.forEach(r=>{
+    const tgtMesh=getMeshByName(r.to);if(!tgtMesh)return;
+    const col=REL_COLORS[r.type]||'#888';
+    // 3D line
+    const srcPos=new THREE.Vector3();srcMesh.getWorldPosition(srcPos);
+    const tgtPos=new THREE.Vector3();tgtMesh.getWorldPosition(tgtPos);
+    const geo=new THREE.BufferGeometry().setFromPoints([srcPos,tgtPos]);
+    const mat=new THREE.LineBasicMaterial({color:new THREE.Color(col),transparent:true,opacity:0.6});
+    const line=new THREE.Line(geo,mat);
+    scene.add(line);relLines.push({line,src:srcMesh,tgt:tgtMesh,color:col});
+    // Subtle glow on related part
+    if(tgtMesh.userData.name!=='dome'){
+      tgtMesh._savedMat=tgtMesh.material;
+      const c=new THREE.Color(col);
+      tgtMesh.material=new THREE.MeshStandardMaterial({color:c,roughness:0.3,metalness:0.4,emissive:c,emissiveIntensity:0.2,transparent:true,opacity:0.8});
+    }
+    // Badge on the related annotation
+    const tgtAnn=annEls.find(a=>a.mesh.userData.name===r.to);
+    if(tgtAnn){
+      const badge=document.createElement('div');badge.className='rel-badge';
+      badge.innerHTML='<span class="rel-type" style="background:'+col+'18;color:'+col+'">'+r.type+'</span><span class="rel-desc">'+r.label+'</span>';
+      const srcName=pm.name,tgtName=PARTS[r.to]?PARTS[r.to].name:r.to,relExplain=r.explain||'',relType=r.type;
+      badge.addEventListener('click',function(){
+        chatMsg('claude','<strong>'+relType+' relationship: '+srcName+' → '+tgtName+'</strong><br><br>'+relExplain+'<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span></div>');
+      });
+      document.getElementById('vp').appendChild(badge);
+      setTimeout(()=>badge.classList.add('vis'),50);
+      relBadges.push({el:badge,annData:tgtAnn});
+    }
+  });
+}
+
+function clearRelLines(){
+  relLines.forEach(r=>{scene.remove(r.line);r.line.geometry.dispose();r.line.material.dispose();
+    const tgt=r.tgt;if(tgt._savedMat){tgt.material=tgt._savedMat;delete tgt._savedMat}});
+  relLines=[];
+  relLabels.forEach(r=>r.el.remove());relLabels=[];
+  relBadges.forEach(b=>b.el.remove());relBadges=[];
+}
+
+function updateDetailCard(){
+  if(!activeDetail)return;
+  // Get annotation screen position (same ring projection as updateAnnotations)
+  const partPos=new THREE.Vector3();activeDetail.mesh.getWorldPosition(partPos);
+  const ringPos=new THREE.Vector3(Math.cos(activeDetail.ang)*ANN_RING, partPos.y, Math.sin(activeDetail.ang)*ANN_RING);
+  const rp=ringPos.clone().project(camera);
+  const w=canvas.clientWidth,h=canvas.clientHeight;
+  if(rp.z>1){activeDetail.el.style.opacity='0';return}
+  const anchorX=(rp.x*0.5+0.5)*w;
+  const anchorY=(-rp.y*0.5+0.5)*h;
+  // Drop down below the annotation label
+  const cardX=anchorX;
+  const cardY=anchorY+14;
+  activeDetail.el.style.left=Math.max(130,Math.min(w-130,cardX))+'px';
+  activeDetail.el.style.top=Math.max(10,Math.min(h-60,cardY))+'px';
+  activeDetail.el.style.opacity='1';
+  activeDetail.el.style.transform='translate(-50%,0)';
+  // Update leader line from card to part
+  const pp=partPos.clone().project(camera);
+  const px=(pp.x*0.5+0.5)*w,py=(-pp.y*0.5+0.5)*h;
+  const ll=document.getElementById('leader-l');
+  if(ll){ll.setAttribute('x1',px);ll.setAttribute('y1',py);
+    ll.setAttribute('x2',parseFloat(activeDetail.el.style.left));ll.setAttribute('y2',parseFloat(activeDetail.el.style.top))}
+  // Update relationship lines
+  relLines.forEach(r=>{
+    const s=new THREE.Vector3();r.src.getWorldPosition(s);
+    const t=new THREE.Vector3();r.tgt.getWorldPosition(t);
+    r.line.geometry.setFromPoints([s,t]);r.line.geometry.attributes.position.needsUpdate=true;
+  });
+  // Update badges positioned below related annotations
+  relBadges.forEach(b=>{
+    const annEl=b.annData.el;
+    if(annEl.style.opacity==='0'){b.el.style.opacity='0';return}
+    const rect=annEl.getBoundingClientRect();const vpRect=VP.getBoundingClientRect();
+    b.el.style.left=(rect.left-vpRect.left+rect.width/2)+'px';
+    b.el.style.top=(rect.bottom-vpRect.top+2)+'px';
+    b.el.style.opacity='';
+  });
+}
+function switchDetailTab(btn,partName,tab){
+  btn.parentElement.querySelectorAll('.dc-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('dc-body').innerHTML=(DETAIL[partName]||{content:{}}).content[tab]||''}
+function closeDetail(){if(activeDetail){activeDetail.el.remove();if(activeDetail.leader)activeDetail.leader.remove();activeDetail=null}clearRelLines()}
+
+// ===== IMPACT BADGES (attached below annotations during cases) =====
+let impactBadges=[];
+function addImpactBadge(partName,sev,text){
+  const ann=annEls.find(a=>a.mesh.userData.name===partName);if(!ann)return;
+  const el=document.createElement('div');
+  el.className='impact-badge '+sev;
+  el.innerHTML=text;
+  document.getElementById('vp').appendChild(el);
+  setTimeout(function(){el.classList.add('vis')},50);
+  impactBadges.push({el:el,annData:ann});
+}
+function clearImpactBadges(){impactBadges.forEach(function(b){b.el.remove()});impactBadges=[];if(cascadeCardEl){cascadeCardEl.remove();cascadeCardEl=null}}
+function updateImpactBadges(){
+  impactBadges.forEach(function(b){
+    var annEl=b.annData.el;
+    if(annEl.style.opacity==='0'){b.el.style.opacity='0';return}
+    var rect=annEl.getBoundingClientRect(),vpRect=VP.getBoundingClientRect();
+    b.el.style.left=(rect.left-vpRect.left+rect.width/2)+'px';
+    // Cascade card stacks below any existing hsbase badge
+    if(b.isCascade){
+      var siblingBadge=impactBadges.find(function(s){return!s.isCascade&&s.annData===b.annData});
+      if(siblingBadge&&siblingBadge.el.offsetHeight){
+        var sibRect=siblingBadge.el.getBoundingClientRect();
+        b.el.style.top=(sibRect.bottom-vpRect.top+4)+'px';
+      }else{
+        b.el.style.top=(rect.bottom-vpRect.top+2)+'px';
+      }
+    }else{
+      b.el.style.top=(rect.bottom-vpRect.top+2)+'px';
+    }
+    if(!b.el.classList.contains('vis'))b.el.classList.add('vis');
+  });
+}
+
+// ===== #2: LIVE COGS CARD =====
+var baseCOGS=38;
+function showCOGS(val,note,delta){
+  var card=document.getElementById('cogsCard');card.style.display='block';
+  document.getElementById('cogsVal').textContent='$'+val;
+  document.getElementById('cogsNote').textContent=note||'DVT · 500 units';
+  var dEl=document.getElementById('cogsDelta');
+  if(delta&&delta!==0){
+    var up=delta>0;
+    dEl.textContent=(up?'+':'')+delta;
+    dEl.style.color=up?'var(--red)':'var(--green)';
+  } else {dEl.textContent=''}
+}
+function hideCOGS(){document.getElementById('cogsCard').style.display='none'}
+
+// ===== #4: VERSION DIFF =====
+var diffMode=false;
+
+var DIFF_DATA={
+  hsbase:{changed:true,prev:'Rev proto-A · 10 fins · AL heatsink',curr:'Rev A · 14 fins · C110 copper',reason:'Switched from aluminum to copper for 2.5× thermal conductivity. Fin count increased from 10 to 14 after thermal sim showed AL insufficient.'},
+  internals:{changed:true,prev:'Rev B · 6-layer · 80×60mm',curr:'Rev C · 8-layer · 100×80mm',reason:'Added 2 power layers for FPGA voltage stability. Board enlarged to accommodate speaker flex connectors.'},
+  battery:{changed:true,prev:'Rev A · 2S1P 2000mAh',curr:'Rev B · 3S1P 3000mAh · BMS OCP added',reason:'Capacity increased for 2hr cordless target. BMS over-current protection added after UL pre-scan finding.'},
+  fpga:{changed:false,prev:'SOM v1.1',curr:'SOM v1.1',reason:'No change — COTS module.'},
+  speaker:{changed:false,prev:'Rev A',curr:'Rev A',reason:'No change since initial selection.'},
+  magnet:{changed:false,prev:'Rev A',curr:'Rev A',reason:'Validated at proto, no changes needed.'},
+  dome:{changed:false,prev:'—',curr:'—',reason:''},
+  fin:{changed:true,prev:'10 AL fins',curr:'14 Cu pins, dome-following',reason:'Complete geometry change with material switch. CNC toolpath rewritten.'}
+};
+function toggleVersionDiff(){
+  diffMode=!diffMode;
+  document.getElementById('diffBtn').textContent=diffMode?'Hide diff':'Version diff';
+  document.getElementById('diffBtn').style.background=diffMode?'rgba(124,58,237,0.15)':'rgba(255,255,255,0.9)';
+  if(diffMode){
+    clearImpactBadges();
+    if(!exploded)toggleExplode();
+    // Changed parts: solid purple. Unchanged: wireframe
+    var wireMat=new THREE.MeshBasicMaterial({color:0x888888,wireframe:true,transparent:true,opacity:0.25});
+    cl.forEach(function(c){var n=c.userData.name;var d=DIFF_DATA[n];
+      if(d&&d.changed)c.material=new THREE.MeshStandardMaterial({color:0x7c3aed,roughness:0.3,metalness:0.4,emissive:0x1a0a3a,emissiveIntensity:0.3});
+      else if(n!=='dome')c.material=wireMat.clone();
+    });
+    // Show diff badges
+    Object.keys(DIFF_DATA).forEach(function(k){var d=DIFF_DATA[k];if(!d.changed)return;
+      addImpactBadge(k,'warn','<strong style="color:var(--purple)">CHANGED</strong><br><span style="color:var(--text3);text-decoration:line-through">'+d.prev+'</span><br>→ '+d.curr);
+    });
+    chatMsg('claude','<strong>Version diff: Proto → EVT</strong><br><br><span style="color:var(--purple)">■</span> <strong>Changed (4 parts):</strong><br>• Heatsink: AL→Cu, 10→14 fins<br>• PCB: 6→8 layer, enlarged<br>• Battery: 2S→3S, +BMS OCP<br>• Fins: Complete redesign<br><br><span style="color:var(--green)">■</span> <strong>Unchanged (3 parts):</strong><br>• FPGA, Speakers, Magnets<br><br><em>4 drawings require rev bump. 2 vendor requals triggered.</em></div><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-jira">Jira</span></div>');
+  } else {
+    clearImpactBadges();resetMats();
+    if(exploded)toggleExplode();
+  }
+}
+
+// ===== #7: AI NEXT ACTIONS =====
+function showNextActions(actions){
+  var h='<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Recommended next actions ▾</span><div class="oir-body"><div class="next-actions">';
+  actions.forEach(function(a,i){
+    h+='<div class="next-act"><span class="next-num">'+(i+1)+'</span><div class="next-text"><strong>'+a.action+'</strong><div class="next-owner">'+a.owner+' · '+a.impact+'</div></div></div>';
+  });
+  h+='</div></div>';
+  chatMsg('claude',h);
+}
+
+// Case-specific next actions
+var NEXT_ACTIONS={
+  case1:[
+    {action:'Schedule ID review to negotiate 20% vs 30% reduction',owner:'PM',impact:'Could eliminate 60% of cascade'},
+    {action:'Run ANSYS thermal sim on 20% reduced geometry',owner:'HW Eng',impact:'2 days — determines if current heatsink survives'},
+    {action:'Get K24 evaluation board for 30 tok/s user testing',owner:'FW Eng',impact:'Validates whether reduced perf is acceptable'}
+  ],
+  case2:[
+    {action:'Cross-section one unit to measure actual TIM gap',owner:'HW Eng',impact:'Confirms or eliminates hypothesis #1 in 1 day'},
+    {action:'Add XSCT thermal logging to firmware',owner:'FW Eng',impact:'Enables real-time debug on remaining units'},
+    {action:'IR camera scan of 3 units under load',owner:'HW Eng',impact:'Reveals hotspot pattern — airflow vs TIM root cause'}
+  ],
+  case3:[
+    {action:'Re-inspect last 50 units with 12-point CMM program',owner:'Quality',impact:'Bounds the scope — how many units affected?'},
+    {action:'Contact Apex CNC about tool wear schedule',owner:'Supply Chain',impact:'Prevents recurrence on next batch'},
+    {action:'Update DWG-1001 with OD roundness callout',owner:'HW Eng',impact:'Closes the spec gap that allowed this escape'}
+  ],
+  case4:[
+    {action:'Design TIM alignment go/no-go fixture',owner:'HW Eng',impact:'Reduces Step 4 defect rate from ~5% to <1%'},
+    {action:'Source portable acoustic test enclosure',owner:'Quality',impact:'$2.5K — enables audio test at CM facility'},
+    {action:'Schedule operator training 2 weeks before DVT build',owner:'Program Mgr',impact:'CM readiness for 500-unit DVT run'}
+  ]
+};
+
+// ===== CMM DATA (Case 3 secondary) =====
+var cmmMarkers=[];
+function clearCMMViz(){
+  cmmMarkers.forEach(function(m){G.remove(m)});cmmMarkers=[];
+  forceVisibleParts=[];
+  restoreVisibility();
+}
+function restoreVisibility(){
+  [batt,pcb,fpga,hsMesh,magnet,puckBot,puckTop,bot,midDisc,dome,edge,domeWire].forEach(function(m){m.visible=true});
+  spkMeshes.forEach(function(m){m.visible=true});
+  finMeshes.forEach(function(m){m.visible=true});
+}
+function showCMMData(){
+  chatMsg('user','Import the CMM inspection data for the last 20 units');
+  var t=chatMsg('claude','<span class="typing">Pulling CMM data from quality system...</span>');
+  // 3D: Hide unrelated parts, show only enclosure
+  clearCMMViz();
+  [batt,pcb,fpga,hsMesh,magnet].forEach(function(m){m.visible=false});
+  spkMeshes.forEach(function(m){m.visible=false});
+  finMeshes.forEach(function(m){m.visible=false});
+  if(exploded)toggleExplode();
+  // Make enclosure visible and semi-transparent
+  puckBot.material=new THREE.MeshStandardMaterial({color:0xf0f0ec,roughness:0.5,metalness:0.05,transparent:true,opacity:0.4});
+  puckTop.material=new THREE.MeshStandardMaterial({color:0xf0f0ec,roughness:0.5,metalness:0.05,transparent:true,opacity:0.4});
+  // Add 12 CMM probe markers around the body OD at mid-height
+  var probeY=PUCK_H*0.5;
+  var probeR=PUCK_R+0.15;
+  // Simulate drift: first 5 points pass (green), 3 marginal (amber), 4 fail (red)
+  var probeColors=[0x22aa55,0x22aa55,0x22aa55,0x22aa55,0x22aa55,0xcc8800,0xcc8800,0xcc8800,0xcc3333,0xcc3333,0xcc3333,0xcc3333];
+  var probeLabels=['109.95','109.94','109.93','109.92','109.91','109.88','109.87','109.85','109.82','109.80','109.78','109.76'];
+  for(var i=0;i<12;i++){
+    var angle=i/12*Math.PI*2;
+    var px=Math.cos(angle)*probeR;
+    var pz=Math.sin(angle)*probeR;
+    // Probe point sphere
+    var col=probeColors[i];
+    var marker=new THREE.Mesh(new THREE.SphereGeometry(0.12,8,8),new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:0.4}));
+    marker.position.set(px,probeY,pz);G.add(marker);cmmMarkers.push(marker);
+    // Probe line from surface to marker
+    var innerPx=Math.cos(angle)*PUCK_R;var innerPz=Math.sin(angle)*PUCK_R;
+    var lineGeo=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(innerPx,probeY,innerPz),new THREE.Vector3(px,probeY,pz)]);
+    var line=new THREE.Line(lineGeo,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0.5}));
+    G.add(line);cmmMarkers.push(line);
+  }
+  // Add a ring showing nominal OD
+  var nomRing=new THREE.Mesh(new THREE.TorusGeometry(PUCK_R,0.02,4,64),new THREE.MeshBasicMaterial({color:0x2563eb,transparent:true,opacity:0.3}));
+  nomRing.rotation.x=Math.PI/2;nomRing.position.y=probeY;G.add(nomRing);cmmMarkers.push(nomRing);
+
+  setTimeout(function(){
+    t.innerHTML='<strong>CMM Inspection Report — Body OD (CH-1001)</strong><br><span style="font-size:8px;color:var(--text3)">12-point radial scan · Last 20 units · Nominal: 110.00mm ±0.10mm</span><br><br>'+
+    '<div style="font-family:var(--mono);font-size:8px;line-height:1.6">'+
+    '<div style="display:flex;border-bottom:1px solid var(--border);padding:2px 0;font-weight:600;color:var(--text3)"><span style="width:40px">Unit</span><span style="width:50px">OD min</span><span style="width:50px">OD max</span><span style="width:45px">Round.</span><span style="flex:1">Status</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#181</span><span style="width:50px">109.95</span><span style="width:50px">110.04</span><span style="width:45px">0.09</span><span style="flex:1;color:var(--green)">PASS</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#182</span><span style="width:50px">109.93</span><span style="width:50px">110.02</span><span style="width:45px">0.09</span><span style="flex:1;color:var(--green)">PASS</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#185</span><span style="width:50px">109.91</span><span style="width:50px">110.01</span><span style="width:45px">0.10</span><span style="flex:1;color:var(--amber)">MARGINAL</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#188</span><span style="width:50px">109.88</span><span style="width:50px">109.98</span><span style="width:45px">0.10</span><span style="flex:1;color:var(--amber)">MARGINAL</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#191</span><span style="width:50px">109.85</span><span style="width:50px">109.96</span><span style="width:45px">0.11</span><span style="flex:1;color:var(--red)">FAIL</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#194</span><span style="width:50px">109.82</span><span style="width:50px">109.93</span><span style="width:45px">0.11</span><span style="flex:1;color:var(--red)">FAIL</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#197</span><span style="width:50px">109.79</span><span style="width:50px">109.91</span><span style="width:45px">0.12</span><span style="flex:1;color:var(--red)">FAIL</span></div>'+
+    '<div style="display:flex;padding:1px 0"><span style="width:40px">#200</span><span style="width:50px">109.76</span><span style="width:50px">109.88</span><span style="width:45px">0.12</span><span style="flex:1;color:var(--red)">FAIL</span></div>'+
+    '</div>'+
+    '<div style="margin-top:6px;padding:6px 8px;background:rgba(220,38,38,0.06);border-radius:4px;border-left:3px solid var(--red);font-size:9px">'+
+    '<strong>Trend detected:</strong> OD is drifting lower by ~0.02mm per 5 units. This is consistent with progressive tool wear on the OD turning insert. Unit #189 is the crossover point where parts start failing spec.'+
+    '</div><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-sap">SAP</span></div>';
+    // Second message with root cause
+    setTimeout(function(){
+      chatMsg('claude','<strong>Root cause confirmed: Tool wear drift</strong><br><br>The CMM data shows a linear regression of <strong>−0.024mm per 5 units</strong> on body OD. Correlating with vendor records:<br><br>• Tool insert replaced at unit #150 (fresh)<br>• First marginal unit: #185 (35 parts on tool)<br>• First failure: #191 (41 parts on tool)<br>• <strong>Tool life for this operation: ~35 parts</strong><br><br>Vendor maintenance schedule calls for insert replacement every 50 parts — <strong>too late by 15 parts.</strong><br><br><strong>Corrective actions:</strong><br>1. Reduce insert replacement interval to 30 parts (immediate)<br>2. Add in-process OD gauge check every 10 parts<br>3. Update SPC chart with tighter control limits (±0.06mm warning)<br>4. Quarantine units #185–200 for 100% re-inspection<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-sap">SAP</span><span class="mcp-pill mcp-jira">Jira</span></div>');
+      // Update impact badge on dome
+      addImpactBadge('dome','crit','<strong style="color:var(--red)">ROOT CAUSE</strong> Tool wear drift −0.024mm/5 units');
+    },1500);
+  },800);
+}
+
+// ===== GLOBAL GANTT =====
+function showGanttChart(){
+  var parts=[
+    {name:'FPGA SOM',start:0,end:16,color:'var(--red)',phase:'Procurement',crit:true},
+    {name:'PCB',start:2,end:8,color:'var(--green)',phase:'Fab'},
+    {name:'Heatsink',start:4,end:14,color:'var(--amber)',phase:'Proto'},
+    {name:'Speakers',start:1,end:9,color:'var(--green)',phase:'Qualified'},
+    {name:'Battery',start:3,end:10,color:'var(--green)',phase:'Proto'},
+    {name:'Enclosure',start:5,end:16,color:'var(--amber)',phase:'Proto'},
+    {name:'FW/DSP',start:8,end:24,color:'var(--blue)',phase:'Development'},
+    {name:'Assembly',start:16,end:20,color:'var(--text3)',phase:'Waiting'},
+    {name:'Thermal',start:20,end:24,color:'var(--text3)',phase:'Waiting'},
+    {name:'Cert',start:24,end:34,color:'var(--text3)',phase:'Waiting'},
+  ];
+  var totalWk=40,nowWk=14;
+  var h='<div style="font-size:9px;font-family:var(--mono);padding:4px 0">';
+  parts.forEach(function(p){
+    var l=(p.start/totalWk*100).toFixed(1);
+    var w=((p.end-p.start)/totalWk*100).toFixed(1);
+    var opacity=p.end<nowWk?'0.4':'1';
+    h+='<div style="display:flex;align-items:center;margin:2px 0"><span style="width:55px;flex-shrink:0;text-align:right;padding-right:5px;font-size:7px;color:'+(p.crit?'var(--red)':'var(--text3)')+'">'+p.name+'</span>';
+    h+='<div style="flex:1;height:12px;background:var(--bg2);border-radius:2px;position:relative">';
+    h+='<div style="position:absolute;left:'+l+'%;width:'+w+'%;height:100%;border-radius:2px;background:'+p.color+';opacity:'+opacity+';display:flex;align-items:center;padding:0 3px;font-size:6px;color:#fff;overflow:hidden">'+p.phase+'</div>';
+    h+='</div></div>';
+  });
+  h+='<div style="position:relative;margin-left:60px;height:12px;margin-top:2px">';
+  h+='<span style="position:absolute;left:'+(12/totalWk*100).toFixed(1)+'%;font-size:6px;color:var(--text3)">EVT</span>';
+  h+='<span style="position:absolute;left:'+(20/totalWk*100).toFixed(1)+'%;font-size:6px;color:var(--text3)">DVT</span>';
+  h+='<span style="position:absolute;left:'+(nowWk/totalWk*100).toFixed(1)+'%;font-size:6px;color:var(--red);font-weight:600">\u25bc NOW</span>';
+  h+='<span style="position:absolute;right:0;font-size:6px;color:var(--text3)">MP</span></div></div>';
+  chatMsg('claude',h);
+}
+function removeGanttChart(){var el=document.getElementById('gantt-global');if(el)el.remove()}
+
+// ===== CASE 1 GLOW SHELLS =====
+var case1Glows=[];
+function clearCase1Glow(){case1Glows.forEach(function(g){G.remove(g.mesh)});case1Glows=[]}
+function updateCase1Glows(){var t=Date.now()*0.003;var pulse=0.5+0.5*Math.sin(t);case1Glows.forEach(function(g){g.mesh.position.copy(g.parent.position);g.mesh.material.opacity=g.baseOpacity*(0.4+0.6*pulse);g.mesh.material.emissiveIntensity=g.baseEmissive*(0.4+0.6*pulse)})}
+
+// ===== ASSEMBLY STEP VIEWER (Case 4) =====
+var ASM_STEPS=[
+  {name:'Step 1: Magnets',parts:['magnet'],desc:'Place CH-1004 into base recess. Orientation mark faces rear. Verify pull force >5kg with gauge.'},
+  {name:'Step 2: Battery',parts:['magnet','battery'],desc:'Place CH-5001 on top of magnets. Route BMS cable to J3 connector. Apply Kapton tape for strain relief.'},
+  {name:'Step 3: PCB',parts:['magnet','battery','internals'],desc:'Lower CH-3001 onto 4× M2.5 standoffs. Torque to 0.25 N·m in star pattern. Connect battery cable to J3.'},
+  {name:'Step 4: TIM + Heatsink',parts:['magnet','battery','internals','fpga','hsbase','fin'],desc:'Place TIM pad centered on FPGA. Lower heatsink CH-2001. Torque 4× M4 to 0.35 N·m — <strong>do not exceed.</strong> Critical alignment step.'},
+  {name:'Step 5: Speakers',parts:['magnet','battery','internals','fpga','hsbase','fin','speaker'],desc:'Press-fit CH-4001 into cardinal positions (N/S/E/W). Route flex cables to J5-J8. Verify gasket seal on each driver.'},
+  {name:'Step 6: Close enclosure',parts:['all'],desc:'Place upper housing. Install dome grille with edge ring snap-fit. Verify 0.15mm gap at equator seam with feeler gauge.'},
+];
+function showAssemblyStep(idx){
+  resetMats();clearImpactBadges();clearCase1Glow();
+  if(!exploded)toggleExplode();
+  var step=ASM_STEPS[idx];
+  var showAll=step.parts[0]==='all';
+  var wireMat=new THREE.MeshBasicMaterial({color:0x888888,wireframe:true,transparent:true,opacity:0.15});
+  var glowMat=new THREE.MeshStandardMaterial({color:0x2563eb,emissive:0x2563eb,emissiveIntensity:0.4,transparent:true,opacity:0.1,side:THREE.DoubleSide,depthWrite:false});
+  // Determine which parts are new in this step (not in previous step)
+  var prevParts=idx>0?ASM_STEPS[idx-1].parts:[];
+  var newParts=step.parts.filter(function(p){return prevParts.indexOf(p)<0});
+  if(showAll){
+    // Show everything, collapse explode
+    if(exploded)toggleExplode();
+    return;
+  }
+  // All meshes: hide, wireframe (previous), or highlight (new)
+  cl.forEach(function(c){
+    var n=c.userData.name;
+    if(step.parts.indexOf(n)>=0){
+      // Part is in this step
+      if(newParts.indexOf(n)>=0){
+        // New in this step — glow
+        function addGlow2(mesh){var g=new THREE.Mesh(mesh.geometry.clone(),glowMat.clone());g.position.copy(mesh.position);g.rotation.copy(mesh.rotation);g.scale.copy(mesh.scale).multiplyScalar(1.05);G.add(g);case1Glows.push({mesh:g,parent:mesh,baseOpacity:0.1,baseEmissive:0.4})}
+        addGlow2(c);
+      }
+      // Show with original material (already reset by resetMats)
+    } else if(n==='dome'||c===puckBot||c===puckTop||c===bot||c===midDisc||c===edge) {
+      // Enclosure — already hidden by explode
+    } else {
+      // Not in this step — wireframe
+      c.material=wireMat.clone();
+    }
+  });
+  // Impact badge on current step
+  if(newParts.length>0){
+    newParts.forEach(function(p){
+      var label=step.name;
+      if(p==='hsbase'||p==='fin')label='TIM + Heatsink (critical)';
+      addImpactBadge(p,'info','<strong style="color:var(--blue)">'+label+'</strong>');
+    });
+  }
+}
+
+// ===== CLICK-THROUGH DEMO =====
+const demoSteps=[
+  {btn:'What am I looking at?',user:'Walk me through this assembly',
+    claude:'You\'re looking at the <strong>Claude Home</strong> smart speaker \u2014 7 subsystems in a wall-mounted enclosure:<br><br>\u2022 <strong>Bottom:</strong> Magnet array (wall mount) + battery pack<br>\u2022 <strong>Middle:</strong> 8-layer PCB with power management + Qi wireless charging<br>\u2022 <strong>Top:</strong> FPGA running Claude 3B, 4 speakers, copper heatsink under a mesh dome<br><br>The heatsink is the most complex part \u2014 curved fins follow the dome contour for passive cooling. No fan allowed (acoustic product).<br><br><strong>Try clicking any annotation</strong>, or choose a case study below.',
+    mcp:['Solidworks','SAP'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();clearImpactBadges();hideCOGS();
+      if(!exploded)toggleExplode();
+      addImpactBadge('battery','info','<strong>3000mAh</strong> · 11.1V · Cordless mode');
+      addImpactBadge('fpga','info','<strong>45 tok/s</strong> · Claude 3B · 12W');
+      addImpactBadge('hsbase','info','<strong>$4.50</strong> · C110 copper · 14 fins');
+      addImpactBadge('speaker','info','<strong>4× 50mm</strong> · Neodymium · Cardinal');
+      addImpactBadge('internals','info','<strong>8-layer FR4</strong> · 100×80mm · Qi 15W · $3.50');
+      addImpactBadge('magnet','info','<strong>NdFeB</strong> · 5.2kg pull · Wall mount')}},
+
+  /* {btn:'Show program timeline',user:'Show me the program schedule and critical path',
+    claude:'Here\'s the global timeline. The <strong style="color:var(--red)">FPGA SOM is the critical path</strong> — 16-week lead time drives the entire program. Assembly can\'t start until all parts arrive, and thermal test can\'t start until assembly is complete.<br><br>We\'re at <strong>week 14</strong>. The heatsink first articles are late (5 of 10) and the enclosure CNC is still running.',
+    mcp:['SAP','Jira','Solidworks'],action(){clearFloatCards();clearImpactBadges();resetMats();removeGanttChart();hideCOGS();forceVisibleParts=[];
+      if(exploded)toggleExplode();
+      showGanttChart();
+      addImpactBadge('fpga','crit','<strong style="color:var(--red)">CRITICAL PATH</strong> 16wk lead — PO placed wk 0');
+      addImpactBadge('hsbase','warn','<strong style="color:var(--amber)">LATE</strong> 5 of 10 first articles received');
+      addImpactBadge('dome','warn','<strong style="color:var(--amber)">IN PROGRESS</strong> CNC running, 2wk remaining')}}, */
+
+  {btn:'Case 1: ID wants 30% smaller',user:'Industrial design wants to shrink the enclosure 30%. What breaks?',
+    claude:'<strong style="color:var(--red)">Blast radius: 6 of 7 subsystems affected.</strong><br><br>Shrinking 30% at EVT is a major redesign. Let me show you what breaks:',
+    mcp:['Solidworks','ANSYS','Altium','SAP'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();clearCase1Glow();
+      if(!exploded)toggleExplode();
+      // Keep default textures — add glowing bounding shells around affected parts
+      var critMat=new THREE.MeshStandardMaterial({color:0xee4422,emissive:0xee4422,emissiveIntensity:0.5,transparent:true,opacity:0.1,side:THREE.DoubleSide,depthWrite:false});
+      var warnMat2=new THREE.MeshStandardMaterial({color:0xcc8800,emissive:0xcc8800,emissiveIntensity:0.4,transparent:true,opacity:0.08,side:THREE.DoubleSide,depthWrite:false});
+      var wireMat=new THREE.MeshBasicMaterial({color:0x888888,wireframe:true,transparent:true,opacity:0.25});
+      magnet.material=wireMat.clone();
+      // Critical glow shells (slightly scaled up)
+      function addGlow(mesh,mat,s){var g=new THREE.Mesh(mesh.geometry.clone(),mat.clone());g.position.copy(mesh.position);g.rotation.copy(mesh.rotation);g.scale.copy(mesh.scale).multiplyScalar(s||1.15);G.add(g);case1Glows.push({mesh:g,parent:mesh,baseOpacity:mat.opacity,baseEmissive:mat.emissiveIntensity})}
+      addGlow(hsMesh,critMat,1.05);addGlow(fpga,critMat,1.05);
+      finMeshes.forEach(function(f){addGlow(f,critMat,1.05)});
+      addGlow(batt,warnMat2,1.02);addGlow(pcb,warnMat2,1.02);
+      spkMeshes.forEach(function(s){addGlow(s,warnMat2,1.03)});
+      showCOGS(43,'30% smaller redesign',+5);
+      clearImpactBadges();
+      addImpactBadge('hsbase','crit','<strong style="color:var(--red)">REDESIGN</strong> 40% less surface area. T_j → 94°C');
+      addImpactBadge('fpga','crit','<strong style="color:var(--red)">THROTTLE</strong> 12W exceeds thermal budget');
+      addImpactBadge('battery','warn','<strong style="color:var(--amber)">RESIZE</strong> 2S1P or pouch cell');
+      addImpactBadge('speaker','warn','<strong style="color:var(--amber)">DOWNSIZE</strong> 50mm → 40mm, −6dB');
+      addImpactBadge('internals','warn','<strong style="color:var(--amber)">RE-LAYOUT</strong> New board outline');
+      addImpactBadge('dome','warn','<strong style="color:var(--amber)">RETOOL</strong> New CNC programs');
+      setTimeout(function(){chatMsg('claude','<strong>Cascade summary:</strong><br><br>\u2022 <strong style="color:var(--red)">Thermal:</strong> Heatsink redesign + new ANSYS sims (2wk) + new CNC toolpath ($500)<br>\u2022 <strong style="color:var(--red)">FPGA:</strong> Re-evaluate K24 or accept throttling<br>\u2022 <strong style="color:var(--amber)">PCB:</strong> Board re-layout (3wk Altium), new fab quote<br>\u2022 <strong style="color:var(--amber)">Battery:</strong> Cell change + BMS redesign + new UL qual ($8K)<br>\u2022 <strong style="color:var(--amber)">Speakers:</strong> Driver downsize + full acoustic re-tuning<br>\u2022 <strong style="color:var(--amber)">Drawings:</strong> 12 drawings need rev bump, 4 need redraw<br><br><strong>Timeline: +8\u201312 weeks. NRE: +$5K. DVT slips past holiday window.</strong><br><br><span style="color:var(--text3)">Without spatial reasoning, each team discovers their issue independently over weeks. Claude catches the full blast radius in seconds.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sap">SAP</span></div>')},1500);
+      setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> ID has not confirmed 30% is firm — could they accept 20%? 20% shrink keeps current battery and speakers. <em>Owner: PM</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> If K24 is viable at 30 tok/s, does product spec accept that? User research needed. <em>Owner: PM</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> UL certification for new battery config adds $8K and 8 weeks. No workaround. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Current heatsink vendor (ThermalTech) cannot quote new geometry until Solidworks model is updated. Blocks thermal validation. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> Holiday launch window closes in 14 weeks. This change needs 8–12. Schedule has zero margin. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Smaller acoustic chamber degrades audio quality — could fail blind listening test vs HomePod. <em>Owner: Acoustics</em></div><div class="msg-mcp"><span class="mcp-pill mcp-jira">Jira</span><span class="mcp-pill mcp-sap">SAP</span></div>')},3500);
+      setTimeout(function(){showNextActions(NEXT_ACTIONS.case1)},5000)}},
+
+  {btn:'Case 2: Thermal test failure',user:'Reliability testing shows FPGA hitting 92\u00b0C after 4 hours. Help me debug.',
+    claude:'<strong style="color:var(--red)">Thermal failure detected.</strong> T_j = 92\u00b0C exceeds 85\u00b0C target. FPGA throttling to 30 tok/s. Tracing the thermal path for root cause.',
+    mcp:['ANSYS Fluent','Solidworks','Altium'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
+      if(!exploded)toggleExplode();
+      // Glow shells on thermal path, wireframe unrelated
+      var critMat=new THREE.MeshStandardMaterial({color:0xee4422,emissive:0xee4422,emissiveIntensity:0.5,transparent:true,opacity:0.1,side:THREE.DoubleSide,depthWrite:false});
+      var warnMat2=new THREE.MeshStandardMaterial({color:0xcc8800,emissive:0xcc8800,emissiveIntensity:0.4,transparent:true,opacity:0.08,side:THREE.DoubleSide,depthWrite:false});
+      var infoMat=new THREE.MeshStandardMaterial({color:0x2563eb,emissive:0x2563eb,emissiveIntensity:0.3,transparent:true,opacity:0.08,side:THREE.DoubleSide,depthWrite:false});
+      var wireMat=new THREE.MeshBasicMaterial({color:0x888888,wireframe:true,transparent:true,opacity:0.25});
+      function addGlow(mesh,mat,s){var g=new THREE.Mesh(mesh.geometry.clone(),mat.clone());g.position.copy(mesh.position);g.rotation.copy(mesh.rotation);g.scale.copy(mesh.scale).multiplyScalar(s||1.05);G.add(g);case1Glows.push({mesh:g,parent:mesh,baseOpacity:mat.opacity,baseEmissive:mat.emissiveIntensity})}
+      // Critical: FPGA (overheating)
+      addGlow(fpga,critMat,1.05);
+      // Warn: heatsink + fins (TIM interface suspect)
+      addGlow(hsMesh,warnMat2,1.05);finMeshes.forEach(function(f){addGlow(f,warnMat2,1.05)});
+      // Info: dome (airflow check)
+      addGlow(dome,infoMat,1.02);
+      // Wireframe unrelated
+      [batt,pcb,magnet].forEach(function(m){m.material=wireMat.clone()});
+      spkMeshes.forEach(function(s){s.material=wireMat.clone()});
+      showCOGS(38,'Under investigation',0);
+      clearImpactBadges();
+      addImpactBadge('fpga','crit','<strong style="color:var(--red)">92°C</strong> Exceeds 85°C limit');
+      addImpactBadge('hsbase','warn','<strong style="color:var(--amber)">CHECK TIM</strong> Gap may be out of spec<br><svg width="160" height="60" viewBox="0 0 160 60" style="margin-top:4px;display:block"><text x="0" y="8" font-size="5" fill="#8a8880" font-family="DM Mono">T_j vs Time (4hr soak)</text><line x1="15" y1="12" x2="15" y2="55" stroke="rgba(0,0,0,0.08)"/><line x1="15" y1="55" x2="155" y2="55" stroke="rgba(0,0,0,0.08)"/><text x="12" y="18" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">95</text><text x="12" y="32" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">85</text><text x="12" y="48" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">72</text><line x1="15" y1="30" x2="155" y2="30" stroke="rgba(220,38,38,0.2)" stroke-dasharray="2 2"/><text x="157" y="32" font-size="4" fill="rgba(220,38,38,0.4)" font-family="DM Mono">85°C limit</text><path d="M15,48 L40,42 L65,38 L90,35 L115,33 L140,32 L155,31" fill="none" stroke="#2563eb" stroke-width="1.2" opacity="0.5"/><text x="50" y="42" font-size="4" fill="#2563eb" font-family="DM Mono">Simulated</text><path d="M15,48 L40,40 L65,34 L90,28 L115,22 L140,19 L155,17" fill="none" stroke="#dc2626" stroke-width="1.5"/><text x="120" y="15" font-size="4" fill="#dc2626" font-family="DM Mono">Actual</text><text x="15" y="59" font-size="4" fill="#8a8880" font-family="DM Mono">0h</text><text x="85" y="59" font-size="4" fill="#8a8880" font-family="DM Mono">2h</text><text x="150" y="59" font-size="4" fill="#8a8880" font-family="DM Mono">4h</text></svg>');
+      addImpactBadge('dome','info','<strong style="color:var(--blue)">IR SCAN</strong> Check airflow blockage');
+      setTimeout(function(){chatMsg('claude','<strong>Root cause analysis \u2014 3 hypotheses:</strong><br><br><strong>1. TIM compression out of spec</strong> (most likely)<br>If gap is 0.6mm vs 0.3mm nom, R_TIM doubles \u2192 +4\u00b0C. Check mounting torque and cross-section.<br><br><strong>2. Chimney airflow blocked</strong><br>Acoustic foam may be obstructing convection path. IR camera the dome exterior for hotspot asymmetry.<br><br><strong>3. FPGA power higher than modeled</strong><br>DPU switching activity may exceed Vivado estimate. Actual TDP could be 14W not 12W \u2192 +6\u00b0C.<br><br><strong>Debug plan:</strong><br>\u2460 Thermocouple on TIM pad \u2014 measure actual R_TIM<br>\u2461 IR camera on dome \u2014 check for hot spots<br>\u2462 XSCT power monitor \u2014 read actual PL power<br>\u2463 Cross-section one unit \u2014 verify TIM compression<br>\u2464 Implement 78\u00b0C early-warning throttle in firmware<div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sw">Solidworks</span></div>');
+      },1500);
+      setTimeout(function(){chatMsg('claude','<strong>Spatial analysis — reading from 3D model:</strong><br><br>I\'m measuring the assembly geometry to cross-check thermal path assumptions:<br><br>• <strong>FPGA-to-heatsink gap:</strong> 0.32mm measured at 4 points → within TIM spec (0.15–0.50mm) <span style="color:var(--green)">✓</span><br>• <strong>Heatsink-to-dome clearance:</strong> min 0.08mm at fin [7,7] (center), max 0.14mm at edges → <span style="color:var(--amber)">tight but in spec</span><br>• <strong>Speaker-to-fin distance:</strong> 12.4mm → no acoustic interference path <span style="color:var(--green)">✓</span><br>• <strong>Battery-to-PCB thermal gap:</strong> 1.1mm → gap pad compressed correctly <span style="color:var(--green)">✓</span><br>• <strong>Dome vent area:</strong> calculating from mesh geometry... 38% open area (spec: 40%) → <span style="color:var(--red)">2% below target. Possible airflow restriction.</span><br><br><em>The vent area finding supports hypothesis #2. Dome perforation may have been reduced in last revision without updating the thermal model.</em><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS Fluent</span></div>')},2500);
+      setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Is the failure unit-specific or systemic? Need to test 5+ units at same conditions. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Was the assembly built per torque spec? Check operator log for TIM mounting step. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> No thermal diode logging in current firmware — FW team must add XSCT hooks before next test run. <em>Owner: FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Only 3 thermocouple-instrumented units available. May need to sacrifice 1 for cross-section. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> If root cause is FPGA TDP higher than modeled, heatsink redesign required — same blast radius as Case 1. <em>Owner: HW Eng + FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Reliability test schedule has 2-week window. Debug + retest must fit or DVT slips. <em>Owner: Program Mgr</em></div><div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-jira">Jira</span></div>')},4500);
+      setTimeout(function(){updateCascadeCard(14);chatMsg('claude','<strong>Try the fin count explorer</strong> on the heatsink — drag the slider to see how fin count affects thermal margin, FPGA performance, and UX in real time. At 14 fins, margin is comfortable. Drop below 10 and you\'ll see it tighten.<div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-sw">Solidworks</span></div>')},5000);
+      setTimeout(function(){showNextActions(NEXT_ACTIONS.case2)},6500)}},
+
+  {btn:'Case 3: Enclosure fails inspection',user:'The dome and base don\'t fit together. Inspection is rejecting units.',
+    claude:'<strong style="color:var(--red)">Assembly fit failure.</strong> Pulling tolerance chain and inspection data to find the gap.',
+    mcp:['Solidworks','SAP'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
+      forceVisibleParts=[dome,puckTop,puckBot,edge,domeWire];
+      if(exploded)toggleExplode();
+      // Glow shells on affected enclosure parts, wireframe unaffected internals
+      var critMat=new THREE.MeshStandardMaterial({color:0xee4422,emissive:0xee4422,emissiveIntensity:0.5,transparent:true,opacity:0.1,side:THREE.DoubleSide,depthWrite:false});
+      var warnMat2=new THREE.MeshStandardMaterial({color:0xcc8800,emissive:0xcc8800,emissiveIntensity:0.4,transparent:true,opacity:0.08,side:THREE.DoubleSide,depthWrite:false});
+      function addGlow(mesh,mat,s){var g=new THREE.Mesh(mesh.geometry.clone(),mat.clone());g.position.copy(mesh.position);g.rotation.copy(mesh.rotation);g.scale.copy(mesh.scale).multiplyScalar(s||1.05);G.add(g);case1Glows.push({mesh:g,parent:mesh,baseOpacity:mat.opacity,baseEmissive:mat.emissiveIntensity})}
+      addGlow(dome,critMat,1.03);addGlow(puckTop,critMat,1.02);addGlow(puckBot,critMat,1.02);
+      addGlow(hsMesh,warnMat2,1.05);
+      showCOGS(39,'+ rework $1/unit',+1);
+      clearImpactBadges();
+      addImpactBadge('dome','crit','<strong style="color:var(--red)">REJECT · GAP 0.35–0.52mm</strong><br>Spec: 0.15±0.05mm<br><button class="chat-act" style="margin-top:4px;pointer-events:auto" onclick="showCMMData()">Import CMM data</button>');
+      addImpactBadge('magnet','info','<strong style="color:var(--blue)">OK</strong> Wall mount unaffected');
+      addImpactBadge('hsbase','warn','<strong style="color:var(--amber)">CHECK FIT</strong> Heatsink-to-dome clearance');
+      setTimeout(function(){chatMsg('claude','<strong>Tolerance chain analysis from 3D model:</strong><br><br>\u2460 <strong>Dome inner radius</strong> \u2014 CMM: R=110.12mm (nom 110.00 \u00b10.10). <span style="color:var(--green)">In spec.</span><br>\u2461 <strong>Body outer radius</strong> \u2014 CMM: R=109.78mm (nom 110.00 \u00b10.10). <span style="color:var(--red)">Out of spec low by 0.12mm.</span><br>\u2462 <strong>Edge ring seat</strong> \u2014 0.48mm (nom 0.50 \u00b10.05). <span style="color:var(--green)">In spec.</span><br>\u2463 <strong>Screw boss position</strong> \u2014 0.08mm radial shift. <span style="color:var(--amber)">Marginal.</span><br><br><strong>Root cause:</strong> Body OD undersized \u2014 CNC tool wear after 200+ parts. Tool not replaced per maintenance schedule.<br><br><strong>Action plan:</strong><br>\u2460 Update DWG-1001-C: tighten body OD tol to \u00b10.05mm<br>\u2461 Alert vendor (Apex CNC) \u2014 replace OD turning tool<br>\u2462 Re-inspect last 50 units with updated CMM program<br>\u2463 Update Solidworks assembly with actual measured dims<br>\u2464 Evaluate compliance gasket ($0.05/unit) for production<br>\u2465 Validate GD&T callouts match inspection method<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span></div>')},1500);
+      setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> How many of the last 200 units are affected? Re-inspect sample of 50 to bound the problem. <em>Owner: Quality</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Is the vendor\u0027s tool maintenance schedule documented? Request maintenance log. <em>Owner: Supply Chain</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Current CMM program checks OD at 3 points only — insufficient for detecting taper from tool wear. Update to 12-point scan. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> 2D drawing DWG-1001-B does not call out OD roundness — only diameter. Add roundness callout 0.02mm. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> If >50 units are affected, rework cost exceeds $300 and delays EVT completion by 1–2 weeks. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Tightening OD tolerance to ±0.05mm may increase vendor reject rate — discuss capability with Apex CNC before committing. <em>Owner: Supply Chain</em></div><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-jira">Jira</span></div>')},3500);
+      setTimeout(function(){showNextActions(NEXT_ACTIONS.case3)},5000)}},
+
+  {btn:'Case 4: Create assembly SOPs',user:'Generate assembly and test SOPs with CAD screenshots',
+    claude:'<strong>Assembly SOP — CH-ASM-001 rev A</strong><br><br>Click each step to see the 3D assembly sequence:',
+    mcp:['Solidworks','Jira'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
+      if(!exploded)toggleExplode();
+      showCOGS(38,'DVT baseline',0);
+      clearImpactBadges();
+      setTimeout(function(){
+        var h='';
+        ASM_STEPS.forEach(function(s,i){
+          var isCrit=i===3;
+          h+='<div style="display:flex;gap:6px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="showAssemblyStep('+i+')">';
+          h+='<span style="width:18px;height:18px;border-radius:50%;background:'+(isCrit?'var(--amber)':'var(--blue)')+';color:#fff;font-size:8px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</span>';
+          h+='<div style="font-size:9px;line-height:1.4"><strong>'+s.name+'</strong><br><span style="color:var(--text3)">'+s.desc+'</span></div></div>';
+        });
+        chatMsg('claude',h+'<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-jira">Jira</span></div>');
+        setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Test SOP ▾</span><div class="oir-body"><strong>Test 1: POST</strong> — 24V power → LED blue → boot <30s<br><strong>Test 2: Thermal soak</strong> — 60 min, T_j <85°C<br><strong>Test 3: Audio</strong> — 20Hz–20kHz, SPL >78dB, THD <2%<br><strong>Test 4: Fit</strong> — Dome gap 0.15 ±0.05mm<br><strong>Test 5: Inference</strong> — 45 tok/s sustained</div>');
+          setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Operator training plan needed 2wk before DVT. <em>Owner: Program Mgr</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> TIM step needs go/no-go fixture. <em>Owner: HW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> XSCT not on production fixture — need UART alt. <em>Owner: FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> CM has no anechoic chamber ($2.5K). <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Step 4 torque near pump-out threshold. <em>Owner: HW Eng</em></div>');
+            setTimeout(function(){showNextActions(NEXT_ACTIONS.case4)},1500)
+          },2000)
+        },1500)
+      },800)}},
+];
+let demoStep=0;
+function showDemoOptions(){
+  var top=document.getElementById('chatActions');
+  var bot=document.getElementById('chatActionsBottom');
+  var acts=demoStep===0?top:bot;
+  // Hide the other one
+  if(demoStep===0){bot.innerHTML=''}else{top.innerHTML=''}
+  // Always show all steps; highlight the active one
+  acts.innerHTML=demoSteps.map(function(s,i){
+    var active=i===(demoStep-1);
+    var style=active?' style="background:var(--copperBg);border-color:var(--copper);color:var(--copper);font-weight:600"':'';
+    return'<button class="chat-act"'+style+' onclick="runDemoStep('+i+')">'+s.btn+'</button>'
+  }).join('');
+}
+function runDemoStep(idx){
+  clearTimeout(glowTimer);
+  demoStep=idx+1;
+  if(idx===0){sph.r=sph.r*1.2;uc()}
+  // Clear all chat messages (keep only chatActions)
+  var msgs=document.getElementById('chatMsgs');
+  var keep=document.getElementById('chatActions');
+  while(msgs.firstChild&&msgs.firstChild!==keep)msgs.removeChild(msgs.firstChild);
+  if(!keep.parentNode)msgs.appendChild(keep);
+  const s=demoSteps[idx];
+  chatMsg('user',s.user);
+  const t=chatMsg('claude','<span class="typing">Analyzing...</span>');
+  setTimeout(()=>{
+    const pills={'Solidworks':'sw','ANSYS Fluent':'an','ANSYS':'an','Altium':'al','SAP':'sap','Jira':'jira'};
+    let html=s.claude;
+    if(s.mcp)html+='<div class="msg-mcp">'+s.mcp.map(m=>'<span class="mcp-pill mcp-'+(pills[m]||'sw')+'">'+m+'</span>').join('')+'</div>';
+    t.innerHTML=html;
+    if(s.action)s.action();
+    showDemoOptions();
+  },600);
+}
+function resetDemo(){
+  demoStep=0;
+  var msgs=document.getElementById('chatMsgs');
+  var keep=document.getElementById('chatActions');
+  var first=msgs.children[0];
+  while(msgs.lastChild&&msgs.lastChild!==first&&msgs.lastChild!==keep)msgs.removeChild(msgs.lastChild);
+  if(!keep.parentNode)msgs.appendChild(keep);
+  clearFloatCards();resetMats();showDemoOptions();
+}
+showDemoOptions();
+var glowTimer=setTimeout(function(){var btn=document.querySelector('#chatActions .chat-act');if(btn&&demoStep===0)btn.classList.add('glow')},10000);
+
+// Cascade card helper — positioned below heatsink annotation
+var cascadeCardEl=null;
+function initCascadeCard(n){
+  removeFloatCard('cas');if(cascadeCardEl){cascadeCardEl.remove();cascadeCardEl=null}
+  var el=document.createElement('div');el.className='impact-badge info';el.id='fc-cas';
+  el.style.maxWidth='220px';el.style.borderLeft='3px solid var(--copper)';
+  el.innerHTML='<strong style="color:var(--copper);font-size:9px;text-transform:uppercase;letter-spacing:0.04em">Fin Count Explorer</strong>'+
+    '<div style="display:flex;align-items:center;gap:6px;margin:6px 0 4px"><input type="range" min="8" max="20" value="'+n+'" id="cas-slider" oninput="onCascadeSlide(this.value)" style="flex:1;accent-color:var(--copper)"><span id="cas-n" style="font-family:var(--mono);font-size:12px;font-weight:600;min-width:18px;text-align:center">'+n+'</span></div>'+
+    '<div class="fc-row"><span class="rl">T_j</span><span class="rv" id="cas-tj"></span></div>'+
+    '<div class="fc-row"><span class="rl">Margin</span><span class="rv" id="cas-margin"></span></div>'+
+    '<div class="fc-row"><span class="rl">FPGA</span><span class="rv" id="cas-tok"></span></div>'+
+    '<div class="fc-row"><span class="rl">UX</span><span class="rv" id="cas-ux"></span></div>'+
+    '<div class="fc-row"><span class="rl">Fin gap</span><span class="rv" id="cas-gap"></span></div>'+
+    '<div class="fc-row"><span class="rl">CNC</span><span class="rv" id="cas-cnc"></span></div>'+
+    '<div class="fc-row"><span class="rl">COGS</span><span class="rv" id="cas-cogs"></span></div>';
+  document.getElementById('vp').appendChild(el);
+  setTimeout(function(){el.classList.add('vis')},50);
+  // Track it like an impact badge, anchored to hsbase annotation
+  var ann=annEls.find(function(a){return a.mesh.userData.name==='hsbase'});
+  if(ann)impactBadges.push({el:el,annData:ann,isCascade:true});
+  cascadeCardEl=el;
+  renderCascadeValues(n);
+}
+function renderCascadeValues(n){
+  // Simplified thermal model: at 14 fins T_j=68°C (comfortable), steeper at low counts
+  // 20 fins → ~56°C, 14 fins → 68°C, 10 fins → 78°C, 8 fins → 84°C
+  var Tj=68-Math.pow(n-14,1.3)*1.2*(n>=14?1:-1);
+  if(n<14)Tj=68+Math.pow(14-n,1.3)*2.5;
+  var margin=85-Tj;
+  var gap=Math.max(0,0.10-(n-14)*0.005),cyc=(25+n*1.5).toFixed(0),uc=(3+n*0.12).toFixed(2),cogs=(33.50+parseFloat(uc)).toFixed(0);
+  // UX tiers — good to degraded to unacceptable
+  var tok,perc,pc;
+  if(margin>20){tok=60;perc='Excellent';pc='var(--green)'}
+  else if(margin>12){tok=50;perc='Good';pc='var(--green)'}
+  else if(margin>6){tok=45;perc='Acceptable';pc='var(--green)'}
+  else if(margin>2){tok=35;perc='Degraded';pc='var(--amber)'}
+  else{tok=20;perc='Unacceptable';pc='var(--red)'}
+  var tc=margin>6?'var(--green)':margin>2?'var(--amber)':'var(--red)';
+  var gc=gap>=0.05?'var(--green)':'var(--red)';
+  document.getElementById('cas-n').textContent=n;
+  document.getElementById('cas-tj').innerHTML='<span style="color:'+tc+'">'+Tj.toFixed(1)+'°C</span>';
+  document.getElementById('cas-margin').innerHTML='<span style="color:'+tc+'">'+margin.toFixed(1)+'°C '+(margin>6?'✓':margin>2?'⚠ narrow':'✗ risk')+'</span>';
+  document.getElementById('cas-tok').textContent=tok+' tok/s';
+  document.getElementById('cas-ux').innerHTML='<span style="color:'+pc+'">'+perc+'</span>';
+  document.getElementById('cas-gap').innerHTML='<span style="color:'+gc+'">'+gap.toFixed(2)+'mm '+(gap>=0.05?'✓':'⚠')+'</span>';
+  document.getElementById('cas-cnc').textContent=cyc+'min · $'+uc;
+  document.getElementById('cas-cogs').textContent='$'+cogs;
+}
+function onCascadeSlide(v){renderCascadeValues(parseInt(v))}
+function updateCascadeCard(n){initCascadeCard(n)}
+
+function fcFinChange(v){const n=parseInt(v);document.getElementById('fc-fn').textContent=n;buildFins(n,'pin');
+  const r=thermalCalc(12,85,28,n,'pin');applyThermalColors(r);
+  const tj=document.getElementById('fc-tj');if(tj){const c=r.margin>10?'var(--green)':r.margin>0?'var(--amber)':'var(--red)';
+    tj.querySelector('.fc-val').style.color=c;tj.querySelector('.fc-val').textContent=r.Tj.toFixed(1)+'°C';
+    tj.querySelector('.fc-sub').innerHTML='Margin: '+r.margin.toFixed(1)+'°C to 85°C<br>Fins: '+n}}
+function fcCascadeChange(v){onCascadeSlide(v)}
+
+function buildOptChartSVG(){const W=220,H=110,mx=26,my=4,mr=4,mb=14,pw=W-mx-mr,ph=H-my-mb,Q=12,Ta=28;
+  const pts={};let gm=0;geoTypes.forEach(g=>{pts[g.id]=[];for(let i=8;i<=20;i++){const r=geoRtotal(g.id,i,Q,Ta);pts[g.id].push({n:i,r});if(r>gm)gm=r}});gm*=1.1;
+  function cx(v){return mx+(v-8)/12*pw}function cy(v){return my+ph-Math.min(v/gm,1)*ph}
+  let s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;display:block">';
+  s+='<line x1="'+mx+'" y1="'+my+'" x2="'+mx+'" y2="'+(H-mb)+'" stroke="rgba(0,0,0,0.06)"/><line x1="'+mx+'" y1="'+(H-mb)+'" x2="'+(W-mr)+'" y2="'+(H-mb)+'" stroke="rgba(0,0,0,0.06)"/>';
+  for(let i=8;i<=20;i+=4)s+='<text x="'+cx(i)+'" y="'+(H-mb+10)+'" text-anchor="middle" fill="rgba(0,0,0,0.2)" font-size="6" font-family="DM Mono">'+i+'</text>';
+  geoTypes.forEach(g=>{let pa='M';pts[g.id].forEach((z,i)=>{pa+=(i?'L':'')+cx(z.n).toFixed(1)+' '+cy(z.r).toFixed(1)});
+    s+='<path d="'+pa+'" fill="none" stroke="'+g.color+'" stroke-width="1.5" opacity="0.6"/>';
+    const op=pts[g.id].find(z=>z.n===g.opt);if(op)s+='<circle cx="'+cx(op.n)+'" cy="'+cy(op.r)+'" r="3" fill="'+g.color+'" opacity="0.7"/>'});
+  s+='</svg><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px">'+geoTypes.map(g=>'<span style="font-size:7px;display:flex;align-items:center;gap:2px;color:var(--text3)"><span style="width:8px;height:2px;background:'+g.color+';border-radius:1px;display:inline-block"></span>'+g.label+'</span>').join('')+'</div>';
+  return s}
+
+// ===== DESIGN COMPARE =====
+let designB=false;
+function toggleDesignCompare(){designB=!designB;document.getElementById('compareBtn').textContent=designB?'Design A':'Compare designs';
+  const card=document.getElementById('compareCard');
+  if(designB){finMeshes.forEach(f=>{G.remove(f);const i=cl.indexOf(f);if(i>-1)cl.splice(i,1)});finMeshes=[];
+    hsMesh.geometry.dispose();hsMesh.geometry=new THREE.BoxGeometry(fpgaW*1.1,0.8,fpgaD*1.1);hsMesh.position.y=hsBaseY+0.4;
+    hsMesh.material=new THREE.MeshStandardMaterial({color:0xd4884a,roughness:0.15,metalness:0.9,emissive:0x221100,emissiveIntensity:0.15});
+    const ep=exParts.find(p=>p.mesh===hsMesh);if(ep)ep.homeY=hsBaseY+0.4;card.style.display='flex';
+    card.innerHTML='<div class="cmp-col"><h4>A · CNC</h4><div class="fc-row"><span class="rl">T_j</span><span class="rv" style="color:var(--amber)">72°C</span></div><div class="fc-row"><span class="rl">Cost</span><span class="rv" style="color:var(--green)">$4.50</span></div><div class="fc-row"><span class="rl">Lead</span><span class="rv">4wk</span></div></div><div class="cmp-col cmp-active"><h4>B · AM</h4><div class="fc-row"><span class="rl">T_j</span><span class="rv" style="color:var(--green)">58°C</span></div><div class="fc-row"><span class="rl">Cost</span><span class="rv" style="color:var(--red)">$15</span></div><div class="fc-row"><span class="rl">Lead</span><span class="rv" style="color:var(--amber)">8wk</span></div></div>';
+  }else{hsMesh.geometry.dispose();hsMesh.geometry=new THREE.BoxGeometry(fpgaW,hsH,fpgaD);hsMesh.position.y=hsBaseY+hsH/2;hsMesh.material=Mt.cu();
+    const ep=exParts.find(p=>p.mesh===hsMesh);if(ep)ep.homeY=hsBaseY+hsH/2;buildFins(14,finType);card.style.display='none'}}
+
+// ===== MEASURE =====
+let measureMode=false,measPts=[],measMarkers=[],measLine=null,measLabel=null;
+function toggleMeasure(){measureMode=!measureMode;document.getElementById('measureBtn').textContent=measureMode?'Cancel':'Measure';
+  document.getElementById('measureBtn').style.background=measureMode?'rgba(37,99,235,0.15)':'rgba(255,255,255,0.9)';if(!measureMode)clearMeasure()}
+function clearMeasure(){measMarkers.forEach(m=>G.remove(m));measMarkers=[];if(measLine){G.remove(measLine);measLine=null}if(measLabel){measLabel.remove();measLabel=null}measPts=[]}
+function addMeasPoint(pt,partName){if(measPts.length>=2)clearMeasure();measPts.push({pt:pt.clone(),part:partName});
+  const mk=new THREE.Mesh(new THREE.SphereGeometry(0.08,12,12),new THREE.MeshStandardMaterial({color:0x2563eb,emissive:0x112244,emissiveIntensity:0.8}));
+  mk.position.copy(pt);G.add(mk);measMarkers.push(mk);
+  if(measPts.length===2){const geo=new THREE.BufferGeometry().setFromPoints([measPts[0].pt,measPts[1].pt]);
+    measLine=new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x2563eb}));G.add(measLine);
+    const dist=(measPts[0].pt.distanceTo(measPts[1].pt)*16).toFixed(1);
+    measLabel=document.createElement('div');measLabel.className='meas-label';measLabel.textContent=dist+'mm';document.getElementById('vp').appendChild(measLabel);
+    chatMsg('claude','Measured: <strong>'+dist+'mm</strong> between '+measPts[0].part+' and '+measPts[1].part+'.'+(parseFloat(dist)<3?' <strong style="color:var(--amber)">Below 3mm clearance spec.</strong>':' Within spec.')+'<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span></div>');
+    measureMode=false;document.getElementById('measureBtn').textContent='Measure';document.getElementById('measureBtn').style.background='rgba(255,255,255,0.9)'}}
+
+// ===== ANNOTATIONS =====
+const annotations=[
+  {mesh:magnet,name:'Magnets',spec:'NdFeB',cls:'ann-dark',ang:Math.PI*0.15},
+  {mesh:batt,name:'Battery',spec:'3000mAh',cls:'ann-dark',ang:Math.PI*0.85},
+  {mesh:pcb,name:'PCB',spec:'8-layer FR4 + Qi',cls:'ann-green',ang:Math.PI*0.05},
+  {mesh:fpga,name:'FPGA',spec:'Kria K26',cls:'ann-purple',ang:Math.PI*0.7},
+  {mesh:hsMesh,name:'Heatsink',spec:'C110 copper',cls:'ann-copper',ang:Math.PI*1.9},
+  {mesh:dome,name:'Enclosure',spec:'AL6061-T6',cls:'ann-dark',ang:Math.PI*1.5}];
+const spkRef=cl.find(c=>c.userData.name==='speaker');if(spkRef)annotations.push({mesh:spkRef,name:'Speakers',spec:'4× 50mm',cls:'ann-teal',ang:Math.PI*1.3});
+const annEls=annotations.map(a=>{const el=document.createElement('div');el.className='ann '+a.cls;
+  const pm=PARTS[a.mesh.userData.name];
+  const pills=pm&&pm.mcp?pm.mcp.map(t=>'<span class="mcp-pill mcp-'+({Solidworks:'sw',ANSYS:'an',Altium:'al',SAP:'sap',Jira:'jira'}[t])+'">'+t+'</span>').join(' '):'';
+  el.innerHTML='<span class="ann-name">'+a.name+'</span><span class="ann-spec">'+a.spec+'</span> '+pills;
+  el.addEventListener('click',()=>showDetail(a.mesh.userData.name,el));
+  // Add leader line SVG per annotation
+  const ldr=document.createElementNS('http://www.w3.org/2000/svg','line');
+  ldr.setAttribute('stroke','rgba(0,0,0,0.1)');ldr.setAttribute('stroke-width','1');ldr.setAttribute('stroke-dasharray','2 2');
+  const ldrSvg=document.getElementById('annLeaders')||createAnnLeaderSvg();
+  ldrSvg.appendChild(ldr);
+  document.getElementById('annWrap').appendChild(el);return{el,mesh:a.mesh,ang:a.ang,leader:ldr}});
+
+function createAnnLeaderSvg(){const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.id='annLeaders';
+  s.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4';
+  document.getElementById('vp').appendChild(s);return s}
+
+const ANN_RING=6.5; // radius of annotation ring in world units
+function updateAnnotations(){const w=canvas.clientWidth,h=canvas.clientHeight;
+  const modelCenter=new THREE.Vector3(0,PUCK_H*0.5,0);
+  annEls.forEach(a=>{if(!a.mesh.visible){a.el.style.opacity='0';a.leader.setAttribute('opacity','0');return}
+  // Part position (for leader line endpoint)
+  const partPos=new THREE.Vector3();a.mesh.getWorldPosition(partPos);
+  const pp=partPos.clone().project(camera);
+  if(pp.z>1){a.el.style.opacity='0';a.leader.setAttribute('opacity','0');return}
+  const px=(pp.x*0.5+0.5)*w,py=(-pp.y*0.5+0.5)*h;
+  // Annotation position: on a ring around model center at fixed angle
+  const ringPos=new THREE.Vector3(Math.cos(a.ang)*ANN_RING, partPos.y, Math.sin(a.ang)*ANN_RING);
+  const rp=ringPos.clone().project(camera);
+  const rx=(rp.x*0.5+0.5)*w,ry=(-rp.y*0.5+0.5)*h;
+  if(rx<-80||rx>w+80||ry<-50||ry>h+50){a.el.style.opacity='0';a.leader.setAttribute('opacity','0');return}
+  a.el.style.left=rx+'px';a.el.style.top=(ry-10)+'px';a.el.style.opacity='1';
+  // Leader line from annotation to part
+  a.leader.setAttribute('x1',rx);a.leader.setAttribute('y1',ry);
+  a.leader.setAttribute('x2',px);a.leader.setAttribute('y2',py);a.leader.setAttribute('opacity','1')
+  });
+  if(measLabel&&measPts.length===2){const mid=new THREE.Vector3().addVectors(measPts[0].pt,measPts[1].pt).multiplyScalar(0.5);
+    const wm=mid.clone();G.localToWorld(wm);wm.project(camera);measLabel.style.left=((wm.x*0.5+0.5)*w)+'px';measLabel.style.top=((-wm.y*0.5+0.5)*h)+'px'}}
+
+// ===== SHARE MENU =====
+function toggleShareMenu(){var m=document.getElementById('shareMenu');m.classList.toggle('vis')}
+function showARPrompt(){
+  document.getElementById('shareMenu').classList.remove('vis');
+  chatMsg('claude','<strong>AR Model Ready</strong><br><br>Open the <strong>Claude app</strong> on your iPhone and tap the spatial icon. The Claude Home speaker will appear in your environment at 1:1 scale.<br><br>You can:<br>• Walk around the model to inspect from any angle<br>• Tap components to see annotations<br>• Place it on your wall to check sizing<br>• Share a screenshot with your team<br><br><span style="color:var(--text3)">Requires iPhone 12+ with iOS 17. Model streams via Claude with spatial reasoning WebSocket — no file download needed.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span></div>');
+}
+
+// ===== USDZ EXPORT =====
+async function exportUSDZ(){
+  try{
+    const exporter=new THREE.USDZExporter();
+    const blob=await exporter.parse(scene);
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='claude-home-speaker.usdz';
+    a.click();URL.revokeObjectURL(url);
+    chatMsg('claude','Exported assembly to <strong>claude-home-speaker.usdz</strong>. Open in Apple Quick Look, Reality Composer, or any USD-compatible viewer.');
+  }catch(e){
+    chatMsg('claude','USDZ export requires a compatible browser. Falling back to OBJ...');
+    // Fallback: export as OBJ text
+    let obj='# Claude Home Speaker Assembly\n';let vi=1;
+    G.traverse(c=>{if(c.isMesh&&c.visible&&c.geometry){
+      const pos=c.geometry.attributes.position;if(!pos)return;
+      const m4=c.matrixWorld;obj+='o '+c.userData.label+'\n';
+      for(let i=0;i<pos.count;i++){const v=new THREE.Vector3(pos.getX(i),pos.getY(i),pos.getZ(i)).applyMatrix4(m4);
+        obj+='v '+v.x.toFixed(4)+' '+v.y.toFixed(4)+' '+v.z.toFixed(4)+'\n'}
+      const idx=c.geometry.index;if(idx){for(let i=0;i<idx.count;i+=3)obj+='f '+(idx.getX(i)+vi)+' '+(idx.getX(i+1)+vi)+' '+(idx.getX(i+2)+vi)+'\n'}
+      vi+=pos.count}});
+    const blob=new Blob([obj],{type:'text/plain'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='claude-home-speaker.obj';a.click();URL.revokeObjectURL(url);
+  }
+}
+
+// ===== LOOP =====
+function animate(){requestAnimationFrame(animate);animateExplode();updateCase1Glows();ren.render(scene,camera);updateAnnotations();updateFloatCards();updateDetailCard();updateImpactBadges()}
+animate();
+function onResize(){camera.aspect=VP.clientWidth/VP.clientHeight;camera.updateProjectionMatrix();ren.setSize(VP.clientWidth,VP.clientHeight)}
+window.addEventListener('resize',onResize);setTimeout(onResize,0);
+</script>
+</body>
+</html>
