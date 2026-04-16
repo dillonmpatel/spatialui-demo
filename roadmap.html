@@ -226,7 +226,7 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
       <ul>
         <li>Run the full eval suite across all three tiers (zero-shot, tool-augmented, fine-tuned) and publish an internal benchmark.</li>
         <li>Get a dogfood version in front of real users — product designers, mechanical engineers, program managers — and collect feedback on where it works and where it falls apart.</li>
-        <li>Build a tolerance chain reasoning eval. Nothing like this exists today, and it would be a proprietary benchmark Anthropic owns.</li>
+        <li>Build a tolerance chain reasoning eval. Nothing like this exists today.</li>
         <li>Document where tools alone are enough and where fine-tuning is actually needed.</li>
       </ul>
       <div class="phase-metric">Objective: Validate whether a tool surface can meaningfully close the gap without full fine-tuning.<br>KR1: Internal benchmark published across all three tiers.<br>KR2: Dogfood shipped to real users with at least 2 validated workflows.<br>KR3: Clear documentation of tool-only vs fine-tuning-required categories.</div>
@@ -264,32 +264,6 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
       </div>
     </div>
     <p style="margin-top:16px;font-size:12px;color:var(--text3)">Full pipeline: Raw 3D (any format) → <strong style="color:var(--purple)">CAD Encoder</strong> → Canonical JSON/code → <strong style="color:var(--amber)">Token compression</strong> → Context window</p>
-  </div>
-</div>
-
-<!-- Deployment Tiers -->
-<div class="section">
-  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
-    <h2>Deployment Tiers — RSP Constraint</h2>
-    <span class="section-tag">3 tiers</span>
-    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-  </div>
-  <div class="section-body">
-    <p>Reading ITAR defense CAD or weapons manufacturing geometry may trigger elevated capability thresholds under Anthropic's Responsible Scaling Policy. The Spatial MCP schema must account for deployment tier from day one.</p>
-    <div class="tiers">
-      <div class="tier t1">
-        <div class="tier-label">Commercial</div>
-        <div class="tier-desc">Standard Anthropic API. Consumer electronics, automotive, medical devices.</div>
-      </div>
-      <div class="tier t2">
-        <div class="tier-label">GovCloud / FedRAMP</div>
-        <div class="tier-desc">Government-compliant infrastructure. Defense subcontractors, aerospace. ITAR-aware.</div>
-      </div>
-      <div class="tier t3">
-        <div class="tier-label">Air-Gapped On-Prem</div>
-        <div class="tier-desc">Fully isolated deployment. Classified programs. No external data egress.</div>
-      </div>
-    </div>
   </div>
 </div>
 
