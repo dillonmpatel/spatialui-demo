@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D as Code — SpatialUI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#eceae6;--text:#1a1a1a;--text2:#555550;--text3:#8a8880;--border:rgba(0,0,0,0.08);--copper:#b45c2e;--copperBg:rgba(180,92,46,0.06);--blue:#2563eb;--red:#dc2626;--green:#16a34a;--amber:#b45309;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.topbar{height:44px;display:flex;align-items:center;padding:0 14px;gap:10px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.topbar-nav a{font-family:var(--mono);font-size:9.5px;letter-spacing:0.03em;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;transition:background 0.15s,color 0.15s}
+.topbar-nav a:hover{background:var(--bg3);color:var(--text)}
+.topbar-nav a.active{background:var(--bg3);color:var(--text);font-weight:600}
+.logo{font-weight:600;font-size:13.5px;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}.logo span{color:var(--copper)}
+.logo a{text-decoration:none;color:inherit;display:flex;align-items:center;gap:6px}
+.content{max-width:820px;margin:0 auto;padding:60px 24px 120px}
+h1{font-size:32px;font-weight:600;letter-spacing:-0.03em;line-height:1.2;margin-bottom:12px}
+.subtitle{font-size:16px;color:var(--text2);line-height:1.6;margin-bottom:48px}
+sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
+
+/* Sections (blog-style) */
+.section{margin-bottom:40px;position:relative;padding-left:44px}
+.section-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;position:absolute;left:0;top:2px}
+.section h2{font-size:18px;font-weight:600;color:var(--text);margin:0 0 12px;line-height:1.3;letter-spacing:-0.01em}
+.section p{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+.section p:last-child{margin-bottom:0}
+.section p strong{color:var(--text);font-weight:500}
+.section-bullets{list-style:none;margin:0;padding:0}
+.section-bullets li{font-size:14px;color:var(--text2);line-height:1.7;padding:8px 0 8px 16px;border-bottom:1px solid var(--border);position:relative}
+.section-bullets li:last-child{border:none}
+.section-bullets li::before{content:'';position:absolute;left:0;top:16px;width:5px;height:5px;border-radius:50%;background:var(--bg3)}
+.section-bullets li strong{color:var(--text);font-weight:500}
+
+/* Points (legacy) */
+.point{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.point-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;background:#fff;transition:background 0.15s}
+.point-header:hover{background:var(--bg2)}
+.point-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.point-title{flex:1}
+.point-title h2{font-size:15px;font-weight:600;color:var(--text);margin:0;line-height:1.3;letter-spacing:-0.01em}
+.point-title p{font-size:12px;color:var(--text3);margin:2px 0 0;line-height:1.4}
+.point-chevron{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:transform 0.2s;flex-shrink:0}
+.point.open .point-chevron{transform:rotate(90deg)}
+.point-body{display:none;padding:0 20px 16px 60px}
+.point.open .point-body{display:block}
+.point-body ul{list-style:none;margin:0;padding:0}
+.point-body li{font-size:13px;color:var(--text2);line-height:1.6;padding:6px 0;border-bottom:1px solid var(--border);position:relative;padding-left:14px}
+.point-body li:last-child{border:none}
+.point-body li::before{content:'';position:absolute;left:0;top:13px;width:5px;height:5px;border-radius:50%;background:var(--bg4,#ccc)}
+.point-body li strong{color:var(--text);font-weight:500}
+
+.pi-copper{background:var(--copperBg);color:var(--copper)}
+.pi-blue{background:rgba(37,99,235,0.1);color:var(--blue)}
+.pi-green{background:rgba(22,163,74,0.1);color:var(--green)}
+.pi-amber{background:rgba(180,83,9,0.1);color:var(--amber)}
+.pi-red{background:rgba(220,38,38,0.1);color:var(--red)}
+
+/* Comparison table */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:0 0 32px}
+.cmp-col{background:#fff;padding:16px}
+.cmp-col h3{font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:8px}
+.cmp-row{font-size:11px;color:var(--text2);margin-bottom:4px;line-height:1.5}
+.cmp-row strong{color:var(--text);font-weight:500}
+
+.refs{margin-top:40px;padding-top:20px;border-top:1px solid var(--border)}
+.refs-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:10px}
+.ref-list{list-style:none;counter-reset:ref}
+.ref-list li{counter-increment:ref;font-size:10px;font-family:var(--mono);color:var(--text3);line-height:1.6;margin-bottom:6px;padding-left:24px;position:relative}
+.ref-list li::before{content:counter(ref);position:absolute;left:0;width:18px;height:18px;border-radius:3px;background:var(--bg2);font-size:8px;font-weight:600;color:var(--text3);display:flex;align-items:center;justify-content:center}
+
+/* Results table */
+.results-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);margin:12px 0}
+.results-table th{text-align:left;padding:6px 8px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);border-bottom:2px solid var(--border)}
+.results-table td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2)}
+.results-table tr.highlight td{color:var(--copper);font-weight:600;background:var(--copperBg)}
+.results-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.bench-note{font-size:10px;color:var(--text3);font-style:italic;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><a href="claudedemo-8d5m8p.html"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>Claude <span>SpatialUI</span></a></div>
+  <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
+  <nav class="topbar-nav">
+    <a href="why-3d.html" class="active">3D as Code</a>
+    <a href="roadmap.html">SpatialUI Roadmap</a>
+  </nav>
+</div>
+
+<div class="content">
+
+<h1>Text became the universal interface for software.<br>3D is the universal interface for space.</h1>
+<div class="cmp">
+  <div class="cmp-col">
+    <h3>Code</h3>
+    <div class="cmp-row"><strong>Medium:</strong> Text — instructions, logic, programs</div>
+    <div class="cmp-row"><strong>Properties:</strong> Inspectable, editable, versionable, composable</div>
+    <div class="cmp-row"><strong>AI unlock:</strong> Claude Code — Claude sees your repo</div>
+  </div>
+  <div class="cmp-col">
+    <h3>3D</h3>
+    <div class="cmp-row"><strong>Medium:</strong> Geometry — shapes, assemblies, worlds</div>
+    <div class="cmp-row"><strong>Properties:</strong> Inspectable, editable, versionable, composable</div>
+    <div class="cmp-row"><strong>AI unlock:</strong> SpatialUI — Claude sees in 3D, and you point back</div>
+  </div>
+</div>
+
+<!-- Point 1 -->
+<div class="section">
+  <div class="section-icon pi-copper">1</div>
+  <h2>3D is the spatial equivalent of code</h2>
+  <ul class="section-bullets">
+    <li><strong>Code is the interface between humans and AI for software.</strong> 3D plays the same role for physical and virtual worlds — to generate, edit, simulate, and communicate between both.</li>
+    <li><strong>This needs to be a two-way interaction.</strong> Claude should be able to annotate, highlight, and manipulate 3D views. The user should be able to select, point, and manipulate back. The 3D viewer is a shared workspace you and Claude can look at together.</li>
+    <li><strong>The other approach is asking the model to be the program instead of write one.</strong> Generative 3D ignores what makes code useful — you can't inspect it on a granular level, direct it to another tool, or provide specific feedback.</li>
+  </ul>
+</div>
+
+<!-- Point 2 -->
+<div class="section">
+  <div class="section-icon pi-blue">2</div>
+  <h2>Claude may already have the foundation</h2>
+  <ul class="section-bullets">
+    <li><strong>Claude Code showed that tool access can unlock latent capability.</strong> Claude could already reason about code — bash and grep gave it the way in. I ran Claude Opus on GeoGramBench to see how it performed and it scored 97.6% (488/500). I haven't benchmarked against the latest competitor performance, but Claude can translate procedural descriptions and geometric understanding. It just needs the right tools.</li>
+    <li><strong>I use Claude Code daily in hardware R&D at Apple.</strong> It helps with isolated software problems, but I'm hitting the ceiling of what isolated tools can do. The next step is giving Claude eyes for geometry — the spatial equivalent of bash and grep.</li>
+    <li><strong>Product design and engineering is the right place to start.</strong> It has well-defined workflows, structured data (parametric CAD and GD&amp;T), and tight feedback loops. Broader applications like architecture, robotics, and digital twins will follow naturally.</li>
+  </ul>
+</div>
+
+<!-- Point 3 -->
+<div class="section">
+  <div class="section-icon pi-green">3</div>
+  <h2>What it would look like</h2>
+  <ul class="section-bullets">
+    <li><strong>Claude Code, but for physical products.</strong> Open a 3D assembly. Claude sees the geometry, traverses the feature tree, measures distances, and cross-references with simulation, PCB, and supply chain data.</li>
+    <li><strong>Try the demo:</strong> click "Case 1: ID wants 30% smaller" on the <a href="claudedemo-8d5m8p.html" style="color:var(--copper)">home page</a>. Claude identifies the thermal impact, flags parts that no longer fit, checks the power envelope, and estimates the cost delta — pulling from CAD, simulation, and ERP in one response. That cross-domain reasoning currently takes a room full of specialists.</li>
+    <li><strong>3D today is fragmented.</strong> Dozens of file formats, incompatible renderers, tools that cost thousands and take years to learn. Something like Claude Code for 3D could make spatial design accessible down to the consumer level — people could interact with natural language and work with 3D design tools in ways that have been completely inaccessible to them until now.</li>
+    <li><strong>For the detailed product roadmap and phasing, <a href="roadmap.html" style="color:var(--copper)">see the next page</a>.</strong></li>
+  </ul>
+</div>
+
+<!-- Point 4 -->
+<div class="section">
+  <div class="section-icon pi-amber">4</div>
+  <h2>The honest gaps — and why Anthropic</h2>
+  <ul class="section-bullets">
+    <li><strong>This isn't ready to ship tomorrow.</strong> GeoGramBench tests procedural geometry, not real CAD files. Metric measurement on production assemblies needs tool augmentation and likely vision fine-tuning. Open questions around CAD encoding, token-efficient geometry, and MCP schema design. Real gaps, but well-scoped and parallelizable.</li>
+    <li><strong>Getting this right requires the right R&D culture and trust.</strong> Taking research into active demos and dogfooding real feedback is how this kind of work moves. But when tools touch physical systems, the reliability bar is completely different than software.</li>
+    <li><strong>My experience on Face ID shaped how I think about this.</strong> We ran data collection, training, and hardware development internally — because the on-device model had to work for everyone, everywhere. Anthropic's RSP is the organizational equivalent of that instinct — not a talking point, but an operating model.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

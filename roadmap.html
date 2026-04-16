@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SpatialUI Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--bg2:#f5f5f3;--bg3:#eceae6;--text:#1a1a1a;--text2:#555550;--text3:#8a8880;--border:rgba(0,0,0,0.08);--copper:#b45c2e;--copperBg:rgba(180,92,46,0.06);--blue:#2563eb;--red:#dc2626;--green:#16a34a;--amber:#b45309;--purple:#7c3aed;--teal:#0d9488;--font:'DM Sans',system-ui,sans-serif;--mono:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.topbar{height:44px;display:flex;align-items:center;padding:0 14px;gap:10px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.topbar-nav a{font-family:var(--mono);font-size:9.5px;letter-spacing:0.03em;color:var(--text2);text-decoration:none;padding:5px 10px;border-radius:6px;transition:background 0.15s,color 0.15s}
+.topbar-nav a:hover{background:var(--bg3);color:var(--text)}
+.topbar-nav a.active{background:var(--bg3);color:var(--text);font-weight:600}
+.logo{font-weight:600;font-size:13.5px;letter-spacing:-0.02em;display:flex;align-items:center;gap:6px}.logo span{color:var(--copper)}
+.logo a{text-decoration:none;color:inherit;display:flex;align-items:center;gap:6px}
+.content{max-width:720px;margin:0 auto;padding:60px 24px 120px}
+h1{font-size:32px;font-weight:600;letter-spacing:-0.03em;line-height:1.2;margin-bottom:12px}
+.subtitle{font-size:16px;color:var(--text2);line-height:1.6;margin-bottom:48px}
+p{font-size:14px;line-height:1.75;color:var(--text2);margin-bottom:16px}
+sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
+
+/* Accordion sections */
+.section{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 20px;cursor:pointer;user-select:none;background:#fff;transition:background 0.15s}
+.section-header:hover{background:var(--bg2)}
+.section-header h2{font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--copper);margin:0;padding:0;border:none;flex:1}
+.section-tag{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.04em;flex-shrink:0}
+.section-chevron{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:transform 0.2s;flex-shrink:0}
+.section.open .section-chevron{transform:rotate(90deg)}
+.section-body{display:none;padding:0 20px 20px;font-size:14px;color:var(--text2);line-height:1.75}
+.section.open .section-body{display:block}
+
+/* Architecture diagram */
+.arch{margin:16px 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-family:var(--mono)}
+.arch-layer{padding:14px 20px;border-bottom:1px solid var(--border);position:relative}
+.arch-layer:last-child{border:none}
+.arch-label{font-size:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:6px}
+.arch-content{font-size:11px;color:var(--text2);line-height:1.6}
+.arch-layer.l1{background:var(--copperBg)}
+.arch-layer.l1 .arch-content{color:var(--copper);font-weight:500}
+.arch-layer.l2{background:rgba(37,99,235,0.04)}
+.arch-layer.l2 .arch-content{color:var(--blue)}
+.arch-layer.l-enc{background:rgba(124,58,237,0.04)}
+.arch-layer.l-enc .arch-content{color:var(--purple);font-weight:500}
+.arch-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.arch-cell{background:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:9px;line-height:1.5}
+.arch-cell strong{display:block;font-size:10px;color:var(--text);margin-bottom:2px}
+.arch-cell span{color:var(--text3)}
+.arch-arrow{text-align:center;padding:6px 0;color:var(--text3);font-size:10px;border-bottom:1px solid var(--border)}
+.gap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.gap-cell{background:rgba(180,83,9,0.04);border:1px solid rgba(180,83,9,0.1);border-radius:6px;padding:10px 12px}
+.gap-cell strong{display:block;font-size:10px;color:var(--amber);margin-bottom:2px}
+.gap-cell span{font-size:9px;color:var(--text3);line-height:1.5}
+.output-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.output-cell{background:rgba(22,163,74,0.04);border:1px solid rgba(22,163,74,0.1);border-radius:6px;padding:10px 12px}
+.output-cell strong{display:block;font-size:10px;color:var(--green);margin-bottom:2px}
+.output-cell span{font-size:9px;color:var(--text3);line-height:1.5}
+
+/* Phase cards inside accordion */
+.phase-body-inner{margin-top:12px}
+.phase-body-inner strong{color:var(--text);font-size:13px}
+.phase-body-inner ul{margin:8px 0 16px 20px;font-size:12px;color:var(--text2)}
+.phase-body-inner li{margin-bottom:6px;line-height:1.6}
+.phase-metric{font-family:var(--mono);font-size:11px;color:var(--text2);margin-top:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px}
+
+/* Deployment tiers */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.tier{border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.tier-label{font-family:var(--mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.tier-desc{font-size:11px;color:var(--text3);line-height:1.5}
+.tier.t1{border-color:rgba(37,99,235,0.2)}.tier.t1 .tier-label{color:var(--blue)}
+.tier.t2{border-color:rgba(180,83,9,0.2)}.tier.t2 .tier-label{color:var(--amber)}
+.tier.t3{border-color:rgba(220,38,38,0.2)}.tier.t3 .tier-label{color:var(--red)}
+
+/* Results table */
+.results-table{width:100%;border-collapse:collapse;font-size:11px;font-family:var(--mono);margin:12px 0}
+.results-table th{text-align:left;padding:6px 8px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);border-bottom:2px solid var(--border)}
+.results-table td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2)}
+.results-table tr.highlight td{color:var(--copper);font-weight:600;background:var(--copperBg)}
+.results-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.bench-note{font-size:10px;color:var(--text3);font-style:italic;margin-top:8px}
+
+.refs{margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.refs-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);margin-bottom:12px}
+.ref-list{list-style:none;counter-reset:ref}
+.ref-list li{counter-increment:ref;font-size:11px;font-family:var(--mono);color:var(--text3);line-height:1.7;margin-bottom:8px;padding-left:28px;position:relative}
+.ref-list li::before{content:counter(ref);position:absolute;left:0;width:20px;height:20px;border-radius:4px;background:var(--bg2);font-size:9px;font-weight:600;color:var(--text3);display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><a href="claudedemo-8d5m8p.html"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>Claude <span>SpatialUI</span></a></div>
+  <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
+  <nav class="topbar-nav">
+    <a href="why-3d.html">3D as Code</a>
+    <a href="roadmap.html" class="active">SpatialUI Roadmap</a>
+  </nav>
+</div>
+
+<div class="content">
+
+<h1>A proposed 6-12 month research program.</h1>
+<p class="subtitle">Can Claude's spatial reasoning become a shipping product? Here's a proposed path to find out — starting with what the benchmarks already show.</p>
+
+<!-- Architecture -->
+<div class="section open">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+    <h2>Architecture: The Tool Surface Map</h2>
+    <span class="section-tag">5 layers</span>
+    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="section-body">
+    <p>Claude with spatial reasoning would be a five-layer system. Claude's cross-domain reasoning would sit at the top, making tool calls through a Spatial MCP schema into the data sources that hardware engineers already use.</p>
+    <div class="arch">
+      <div class="arch-layer l1">
+        <div class="arch-label">Layer 1 — Claude Reasoning</div>
+        <div class="arch-content">Cross-domain synthesis &middot; Context window &middot; Code reasoning that may transfer to CAD-as-code<sup>1,2</sup></div>
+      </div>
+      <div class="arch-arrow">&darr; tool calls</div>
+      <div class="arch-layer l2">
+        <div class="arch-label">Layer 2 — Spatial MCP Tool Schema</div>
+        <div class="arch-content" style="margin-bottom:10px">Focused on parametric CAD (STEP, SolidWorks, Fusion 360) — the structured representation where design intent, constraints, and tolerances are already encoded.</div>
+        <div class="arch-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:8px">
+          <div class="arch-cell" style="border-color:rgba(37,99,235,0.2)"><strong style="color:var(--blue)">Read</strong><span>query_feature_tree &middot; measure_exact &middot; get_constraints &middot; get_tolerances &middot; get_mass_properties</span></div>
+          <div class="arch-cell" style="border-color:rgba(22,163,74,0.2)"><strong style="color:var(--green)">Write</strong><span>modify_feature &middot; create_feature &middot; add_constraint &middot; set_material &middot; delete_feature</span></div>
+          <div class="arch-cell" style="border-color:rgba(180,92,46,0.2)"><strong style="color:var(--copper)">Viewport (two-way)</strong><span>select_region &middot; user_selection &middot; highlight &middot; annotate &middot; set_section_plane &middot; explode_view</span></div>
+        </div>
+        <div class="arch-grid" style="grid-template-columns:1fr 1fr">
+          <div class="arch-cell" style="border-color:rgba(180,83,9,0.2)"><strong style="color:var(--amber)">Analysis</strong><span>check_interference &middot; validate_tolerances &middot; calculate_stackup &middot; run_thermal_sim &middot; query_bom</span></div>
+          <div class="arch-cell" style="border-color:rgba(124,58,237,0.2)"><strong style="color:var(--purple)">Cross-Domain Query</strong><span>query_supply_chain &middot; query_pcb_net &middot; query_inspection_data &middot; query_sim_results</span></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px"><strong>Non-parametric geometry (meshes, point clouds, 3DGS, NeRF):</strong> These lack design intent and require reconstruction before most spatial tools work. Supporting them is an open research direction but not the core focus.</div>
+      </div>
+      <div class="arch-arrow">&darr;</div>
+      <div class="arch-layer">
+        <div class="arch-label">Layer 3 — Data Sources</div>
+        <div class="arch-grid">
+          <div class="arch-cell"><strong>CAD / Geometry</strong><span>SolidWorks, Fusion 360, STEP files</span></div>
+          <div class="arch-cell"><strong>Simulation</strong><span>ANSYS Fluent, FEA, CFD, thermal</span></div>
+          <div class="arch-cell"><strong>PCB / Electrical</strong><span>Altium, KiCad, nets, DRC</span></div>
+          <div class="arch-cell"><strong>PLM / Supply</strong><span>SAP, Arena, BOM, lead times</span></div>
+          <div class="arch-cell"><strong>Inspection</strong><span>CMM, X-ray, GD&amp;T, SPC, AOI</span></div>
+        </div>
+      </div>
+      <div class="arch-arrow">&darr; any 3D format</div>
+      <div class="arch-layer l-enc">
+        <div class="arch-label">Layer 3.5 — CAD Encoder</div>
+        <div class="arch-content">Mesh / point cloud / STEP / STL / OBJ / USD &rarr; canonical JSON/code representation &middot; Aims to reverse-engineer design intent from raw geometry<sup>7,9</sup></div>
+      </div>
+      <div class="arch-arrow">&darr; cross-domain outputs</div>
+      <div class="arch-layer">
+        <div class="arch-label">Layer 5 — Cross-Domain Outputs</div>
+        <div class="output-grid">
+          <div class="output-cell"><strong>Manufacturing</strong><span>Blast radius, tolerance chains, DFM review, inspection</span></div>
+          <div class="output-cell"><strong>Architecture</strong><span>Code compliance, structural clash detection, MEP coordination</span></div>
+          <div class="output-cell"><strong>Product Design</strong><span>0-to-1 concepting, parametric exploration, fit &amp; finish</span></div>
+          <div class="output-cell"><strong>3D Art &amp; VFX</strong><span>Scene layout, rigging review, asset optimization, lighting</span></div>
+        </div>
+        <div class="output-grid">
+          <div class="output-cell"><strong>Robotics</strong><span>Kinematic validation, workspace planning, collision paths</span></div>
+          <div class="output-cell"><strong>Facilities</strong><span>Space planning, equipment layout, egress analysis</span></div>
+          <div class="output-cell"><strong>Medical Devices</strong><span>Implant fit, biocompat review, FDA submission geometry</span></div>
+          <div class="output-cell"><strong>Packaging</strong><span>Nesting optimization, structural sim, unfolding &amp; dielines</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Phase 1 -->
+<div class="section">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+    <h2>Phase 1: Baseline Established</h2>
+    <span class="section-tag">Weeks 1–6</span>
+    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="section-body">
+    <p>I ran Claude Opus 4.6 on GeoGramBench to establish a spatial reasoning baseline and it had an <strong>97.6% accuracy (488/500)</strong>. While I haven't benchmarked against the latest competitor performance, Claude is capable of interpreting code-described geometry.</p>
+
+    <div class="phase-body-inner">
+      <strong>Remaining Phase 1 work: Build Spatial MCP + measure tool delta</strong>
+      <ul>
+        <li>Build minimal Spatial MCP schema: select_region, measure_distance, query_feature_tree.</li>
+        <li>Re-run GeoGramBench and 3DSRBench with tool access. Measure the delta on real CAD assemblies (not just procedural geometry code).</li>
+        <li>GeoGramBench tests code-described geometry. Real CAD files are harder — tool access could bridge that gap. If the Claude Code analogy holds — where tool access dramatically improved code task performance — a 40-60% improvement for spatial tools would be a reasonable initial hypothesis.</li>
+      </ul>
+      <div class="phase-metric">Objective: Quantify tool-augmented improvement on real CAD data.<br>KR1: Establish zero-shot baseline on 3DSRBench assembly tasks.<br>KR2: Measure tool-augmented delta on same tasks — hypothesis: &ge;40% gap closure.<br>KR3: Identify categories where tools alone are insufficient and fine-tuning is needed.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Phase 2 -->
+<div class="section">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+    <h2>Phase 2: Close the Gap</h2>
+    <span class="section-tag">Weeks 7–10</span>
+    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="section-body">
+    <p>SpatialVLM demonstrated that synthetic data generation can unlock metric spatial reasoning — 2B VQA examples from 10M images.<sup>5</sup> CAD-Llama showed that CAD-as-code fine-tuning can achieve 0.966 command accuracy.<sup>2</sup> This phase adapts both approaches.</p>
+    <div class="phase-body-inner">
+      <ul>
+        <li>Generate synthetic CAD training data following the SpatialVLM pipeline: CAD viewport screenshots paired with scene graph ground truth.<sup>5</sup></li>
+        <li>Synthetic GD&amp;T annotation pairs — tolerance callouts matched to geometry features.</li>
+        <li>Multi-view renders of assemblies with feature tree labels for visual grounding.</li>
+        <li>Tolerance chain VQA pairs — "what is the stack-up from datum A to surface B?"</li>
+        <li>Fine-tune using SpatialLLM recipe: 3D-informed multimodal alignment + visual instruction tuning. Avoid fine-tuning the visual encoder directly (hurts generalization).<sup>6</sup></li>
+      </ul>
+      <div class="phase-metric">Objective: Close the gap between benchmark geometry and real-world CAD reasoning.<br>KR1: Generate synthetic CAD training dataset (&ge;10K viewport + scene graph pairs).<br>KR2: Fine-tuned accuracy approaches CAD-Llama's 0.966 command accuracy on assembly feature ID.<br>KR3: Feature ID accuracy &gt;0.90 on 3DSRBench-style assembly QA.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Phase 3 -->
+<div class="section">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+    <h2>Phase 3: Ship and Dogfood</h2>
+    <span class="section-tag">Weeks 11–12</span>
+    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="section-body">
+    <div class="phase-body-inner">
+      <ul>
+        <li>Run the full eval suite across all three tiers (zero-shot, tool-augmented, fine-tuned) and publish an internal benchmark.</li>
+        <li>Get a dogfood version in front of real users — product designers, mechanical engineers, program managers — and collect feedback on where it works and where it falls apart.</li>
+        <li>Build a tolerance chain reasoning eval. Nothing like this exists today, and it would be a proprietary benchmark Anthropic owns.</li>
+        <li>Document where tools alone are enough and where fine-tuning is actually needed.</li>
+      </ul>
+      <div class="phase-metric">Objective: Validate whether a tool surface can meaningfully close the gap without full fine-tuning.<br>KR1: Internal benchmark published across all three tiers.<br>KR2: Dogfood shipped to real users with at least 2 validated workflows.<br>KR3: Clear documentation of tool-only vs fine-tuning-required categories.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Research Gaps -->
+<div class="section">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+    <h2>Four Research Gaps — Parallelizable</h2>
+    <span class="section-tag">Independent workstreams</span>
+    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="section-body">
+    <p>These workstreams are independent and can run concurrently. None requires the others to be complete before starting.</p>
+    <div class="gap-grid">
+      <div class="gap-cell">
+        <strong>3D Vision Fine-Tune</strong>
+        <span>CAD viewport → scene graph training pairs. Synthetic GD&amp;T annotations. Following SpatialVLM's data generation pipeline. Key risk: fine-tuning visual encoders with 3D data can hurt generalization.<sup>5,6</sup></span>
+      </div>
+      <div class="gap-cell">
+        <strong>Spatial MCP Schema</strong>
+        <span>Tool definitions for select_region, measure_distance, query_feature_tree, set_section_plane (read), and modify_geometry, create_feature (write). Auth model for CAD file access. Geometry context protocol.</span>
+      </div>
+    </div>
+    <div class="gap-grid" style="margin-top:8px">
+      <div class="gap-cell">
+        <strong>CAD Encoder</strong>
+        <span>Format-agnostic geometry compiler: mesh / point cloud / STEP / STL / OBJ / USD → canonical JSON/code. Aims to recover design intent (primitives, features, holes, fillets) from raw triangles. Builds on cadrille and Point2CAD research. Could enable non-CAD domains (3D art, architecture, robotics) where native formats are meshes, not parametric CAD.<sup>7,9</sup></span>
+      </div>
+      <div class="gap-cell">
+        <strong>Token-Efficient Geometry</strong>
+        <span>The back half of the encoder pipeline: once geometry is in canonical form, compress it for context. 50-part feature trees can exceed 100K tokens. Hierarchical summarization preserving tolerance-critical features while discarding cosmetic detail. Follows CADmium's minimal-JSON approach.<sup>1</sup></span>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:12px;color:var(--text3)">Full pipeline: Raw 3D (any format) → <strong style="color:var(--purple)">CAD Encoder</strong> → Canonical JSON/code → <strong style="color:var(--amber)">Token compression</strong> → Context window</p>
+  </div>
+</div>
+
+<!-- Deployment Tiers -->
+<div class="section">
+  <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+    <h2>Deployment Tiers — RSP Constraint</h2>
+    <span class="section-tag">3 tiers</span>
+    <div class="section-chevron"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L8 6L4.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  </div>
+  <div class="section-body">
+    <p>Reading ITAR defense CAD or weapons manufacturing geometry may trigger elevated capability thresholds under Anthropic's Responsible Scaling Policy. The Spatial MCP schema must account for deployment tier from day one.</p>
+    <div class="tiers">
+      <div class="tier t1">
+        <div class="tier-label">Commercial</div>
+        <div class="tier-desc">Standard Anthropic API. Consumer electronics, automotive, medical devices.</div>
+      </div>
+      <div class="tier t2">
+        <div class="tier-label">GovCloud / FedRAMP</div>
+        <div class="tier-desc">Government-compliant infrastructure. Defense subcontractors, aerospace. ITAR-aware.</div>
+      </div>
+      <div class="tier t3">
+        <div class="tier-label">Air-Gapped On-Prem</div>
+        <div class="tier-desc">Fully isolated deployment. Classified programs. No external data egress.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- References -->
+<div class="refs">
+  <div class="refs-title">References</div>
+  <ol class="ref-list">
+    <li>CADmium — Mila (Dec 2025). Fine-tuned Qwen2.5-Coder on minimal-JSON CAD histories. Code LLMs naturally handle structured CAD formats.</li>
+    <li>Li et al. — CAD-Llama (CVPR 2025). 99.9% unconditional generation success. 0.966 command type accuracy on structured CAD code.</li>
+    <li>GeoGramBench (NeurIPS 2025 submission). 500 problems testing Program-to-Geometry translation. &lt;50% at highest abstraction, &gt;80% on local primitives.</li>
+    <li>Ma et al. — 3DSRBench (2024). 2,762 3D spatial reasoning questions across 12 subtypes. SOTA LMMs show degraded performance on uncommon viewpoints.</li>
+    <li>SpatialVLM — Google (2024). 2B VQA examples on 10M images. Proved synthetic data generation unlocks metric-scale spatial reasoning.</li>
+    <li>SpatialLLM (CVPR 2025). 3D-informed multimodal alignment. SOTA on 3DSRBench. Finding: fine-tuning CLIP with 3D data hurts generalization.</li>
+    <li>cadrille (ICLR 2026). First unified multimodal CAD reconstruction. RL fine-tuning on procedural data outperforms SFT on handcrafted datasets.</li>
+    <li>IJCAI 2025 Survey. Comprehensive taxonomy of spatial reasoning approaches (image-based, point cloud-based, hybrid).</li>
+    <li>Point2CAD / Point2Sequence. Reconstructs B-rep CAD from point clouds by predicting sketch+extrude sequences. Mesh → point cloud → parametric CAD pipeline.</li>
+    <li>BrepGen (2024). Generates B-rep CAD directly including topology (faces, edges, vertices with NURBS parameters). Candidate target representation for CAD encoder output.</li>
+    <li>Xu et al. — CAD-MLLM (2024). Unified encoder for text, multi-view images, and 3D point clouds. Frozen vision/point encoders with trainable linear projections into LLM.</li>
+  </ol>
+</div>
+
+</div>
+</body>
+</html>
