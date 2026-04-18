@@ -121,6 +121,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
 .welcome-popup p{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:20px}
 .welcome-popup button{padding:8px 22px;border-radius:8px;border:none;background:var(--copper);color:#fff;font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:opacity 0.15s}
 .welcome-popup button:hover{opacity:0.88}
+.wp-eyebrow{font-family:var(--mono);font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--copper);margin-bottom:10px}
+.wp-steps{display:flex;flex-direction:column;gap:8px;margin:14px 0 18px;text-align:left;border-top:1px solid var(--border);padding-top:14px}
+.wp-step{display:flex;align-items:flex-start;gap:10px;font-size:10.5px;color:var(--text2);line-height:1.45}
+.wp-step-num{width:20px;height:20px;border-radius:50%;background:var(--copperBg);border:1px solid rgba(180,92,46,0.25);color:var(--copper);font-family:var(--mono);font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.wp-step strong{color:var(--text);display:block;font-size:10.5px}
+.tour-overlay{position:fixed;inset:0;z-index:200;pointer-events:none;transition:background 0.4s}
+.tour-overlay.dim-left{background:linear-gradient(to right,rgba(0,0,0,0.45) 0,rgba(0,0,0,0.45) 340px,transparent 420px)}
+.tour-overlay.dim-right{background:linear-gradient(to right,transparent 380px,rgba(0,0,0,0.45) 450px)}
+.tour-callout{position:fixed;background:#fff;border:1px solid var(--border2);border-radius:12px;padding:16px 18px;width:300px;box-shadow:0 6px 28px rgba(0,0,0,0.16);z-index:201;transition:opacity 0.25s;pointer-events:auto}
+.tour-callout h3{font-size:13px;font-weight:600;letter-spacing:-0.02em;color:var(--text);margin-bottom:6px}
+.tour-callout p{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:14px}
+.tour-dots{display:flex;gap:5px;margin-bottom:12px}
+.tour-dot{width:5px;height:5px;border-radius:50%;background:var(--bg4);transition:background 0.2s}
+.tour-dot.on{background:var(--copper)}
+.tour-actions{display:flex;justify-content:space-between;align-items:center}
+.tour-skip-btn{background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--font);padding:0}
+.tour-skip-btn:hover{color:var(--text2)}
+.tour-next-btn{padding:6px 16px;border-radius:7px;border:none;background:var(--copper);color:#fff;font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer}
+.tour-next-btn:hover{opacity:0.88}
+.tour-ann-glow .ann{box-shadow:0 0 0 2px rgba(180,92,46,0.8),0 0 14px rgba(180,92,46,0.4)!important;border-color:var(--copper)!important;animation:tour-glow 1.5s ease infinite}
+@keyframes tour-glow{0%,100%{box-shadow:0 0 0 2px rgba(180,92,46,0.6),0 0 8px rgba(180,92,46,0.25)}50%{box-shadow:0 0 0 2px rgba(180,92,46,1),0 0 22px rgba(180,92,46,0.65)}}
+.tour-chat-glow{box-shadow:0 0 0 2px var(--copper),0 0 24px rgba(180,92,46,0.35)!important;position:relative;z-index:201}
+.chat-prompt-label{font-family:var(--mono);font-size:8px;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3);padding:6px 10px 2px;display:block;width:100%}
 </style>
 </head>
 <body>
@@ -128,18 +151,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
 <div class="welcome-overlay" id="welcomeOverlay">
   <div class="welcome-popup">
     <div class="wp-icon">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--copper)" stroke-width="1.5"/><path d="M5 8.5l2 2 4-4" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--copper)" stroke-width="1.5"/><path d="M4 8h8M8 4v8" stroke="var(--copper)" stroke-width="1.5" stroke-linecap="round"/></svg>
     </div>
-    <h2>What if your LLM had spatial reasoning?</h2>
-    <p>Rotate the 3D model, click the annotations, and explore the chat prompts to see how an LLM could reason spatially about a real product.</p>
-    <button onclick="document.getElementById('welcomeOverlay').style.display='none'">Explore the demo</button>
+    <div class="wp-eyebrow">3D Reasoning Demo</div>
+    <h2>AI with a 3D viewer</h2>
+    <p>Most AI reads specs. This demos what changes when an LLM can <em>see</em> geometry — tracing how parts connect, fail, and affect each other across disciplines in seconds.</p>
+    <div class="wp-steps">
+      <div class="wp-step"><span class="wp-step-num">1</span><div><strong>Drag to rotate · scroll to zoom</strong>Explore the assembly from any angle</div></div>
+      <div class="wp-step"><span class="wp-step-num">2</span><div><strong>Click any part label</strong>See component data, open issues, and cross-part relationships</div></div>
+      <div class="wp-step"><span class="wp-step-num">3</span><div><strong>Choose a prompt in the chat panel</strong>Watch the AI reason across CAD, thermal sim, and supply chain at once</div></div>
+    </div>
+    <button onclick="document.getElementById('welcomeOverlay').style.display='none';startTour()">Start exploring</button>
   </div>
 </div>
 
 <div class="topbar">
   <div class="logo"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:0.4"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/></svg>LLM <span>3D</span></div>
   <div class="sep"></div>
-  <div class="tl">what if your LLM had a 3D viewer with spatial reasoning?</div>
+  <div class="tl">what if your LLM had a 3D viewer with 3D reasoning?</div>
   <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
   <nav class="topbar-nav">
     <a href="why-3d.html">3D as Code</a>
@@ -149,12 +178,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
 <div class="main">
   <div class="chat">
     <div class="chat-msgs" id="chatMsgs">
-      <div class="chat-msg msg-claude"><strong>LLM Home</strong> — a fictitious smart speaker concept that runs a distilled LLM 3B parameter locally on an FPGA<br><br>
-      • Wall-mounted, passive-cooled speaker<br>
-      • 45 tok/s inference, no cloud required<br>
-      • $38 COGS at DVT, $89 MSRP target<br>
-      • Currently at <strong style="color:var(--blue)">EVT</strong> phase (200 units)<br><br>
-      <span style="font-size:9px;color:var(--text3)">This 3D view connects data from CAD, simulation, supply chain, and firmware. Click any annotation to explore — or use the prompts below.</span>
+      <div class="chat-msg msg-claude">I have 3D context on this assembly — I can see its geometry, read clearances, and query connected data across CAD, thermal sim, supply chain, and firmware simultaneously.<br><br>
+      The model is <strong>LLM Home</strong>, a fictitious smart speaker. It's the <em>demo context</em>, not the point — seven subsystems in a wall-mounted enclosure at EVT. It gives me something concrete to reason about across disciplines.<br><br>
+      <span style="font-size:9px;color:var(--text3)">Click any label in the viewport to inspect a component, or try one of the prompts below to see 3D reasoning in action.</span>
       <div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sap">SAP</span></div></div>
     <div class="chat-actions" id="chatActions"></div>
     </div>
@@ -163,7 +189,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
   <div class="viewport" id="vp">
     <canvas id="cvs"></canvas>
     <div class="vp-badge" id="badge"><span class="vp-dot"></span><span id="badgeL"></span></div>
-    <div class="vp-info" id="vpInfo">CLAUDE HOME · SMART SPEAKER</div>
+    <div class="vp-info" id="vpInfo">3D REASONING DEMO · LLM HOME</div>
     <div class="hover-tip" id="hoverTip"></div>
     <div class="ann-wrap" id="annWrap"></div>
     <button class="vp-btn" id="explodeBtn" style="bottom:10px;right:10px" onclick="toggleExplode()">Explode view</button>
@@ -948,7 +974,7 @@ const demoSteps=[
       addImpactBadge('speaker','warn','<strong style="color:var(--amber)">DOWNSIZE</strong> 50mm → 40mm, −6dB');
       addImpactBadge('internals','warn','<strong style="color:var(--amber)">RE-LAYOUT</strong> New board outline');
       addImpactBadge('dome','warn','<strong style="color:var(--amber)">RETOOL</strong> New CNC programs');
-      setTimeout(function(){chatMsg('claude','<strong>Cascade summary:</strong><br><br>\u2022 <strong style="color:var(--red)">Thermal:</strong> Heatsink redesign + new ANSYS sims (2wk) + new CNC toolpath ($500)<br>\u2022 <strong style="color:var(--red)">FPGA:</strong> Re-evaluate K24 or accept throttling<br>\u2022 <strong style="color:var(--amber)">PCB:</strong> Board re-layout (3wk Altium), new fab quote<br>\u2022 <strong style="color:var(--amber)">Battery:</strong> Cell change + BMS redesign + new UL qual ($8K)<br>\u2022 <strong style="color:var(--amber)">Speakers:</strong> Driver downsize + full acoustic re-tuning<br>\u2022 <strong style="color:var(--amber)">Drawings:</strong> 12 drawings need rev bump, 4 need redraw<br><br><strong>Timeline: +8\u201312 weeks. NRE: +$5K. DVT slips past holiday window.</strong><br><br><span style="color:var(--text3)">Without spatial reasoning, each team discovers their issue independently over weeks. Claude catches the full blast radius in seconds.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sap">SAP</span></div>')},1500);
+      setTimeout(function(){chatMsg('claude','<strong>Cascade summary:</strong><br><br>\u2022 <strong style="color:var(--red)">Thermal:</strong> Heatsink redesign + new ANSYS sims (2wk) + new CNC toolpath ($500)<br>\u2022 <strong style="color:var(--red)">FPGA:</strong> Re-evaluate K24 or accept throttling<br>\u2022 <strong style="color:var(--amber)">PCB:</strong> Board re-layout (3wk Altium), new fab quote<br>\u2022 <strong style="color:var(--amber)">Battery:</strong> Cell change + BMS redesign + new UL qual ($8K)<br>\u2022 <strong style="color:var(--amber)">Speakers:</strong> Driver downsize + full acoustic re-tuning<br>\u2022 <strong style="color:var(--amber)">Drawings:</strong> 12 drawings need rev bump, 4 need redraw<br><br><strong>Timeline: +8\u201312 weeks. NRE: +$5K. DVT slips past holiday window.</strong><br><br><span style="color:var(--text3)">Without 3D reasoning, each team discovers their issue independently over weeks. The AI catches the full blast radius in seconds.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sap">SAP</span></div>')},1500);
       setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> ID has not confirmed 30% is firm — could they accept 20%? 20% shrink keeps current battery and speakers. <em>Owner: PM</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> If K24 is viable at 30 tok/s, does product spec accept that? User research needed. <em>Owner: PM</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> UL certification for new battery config adds $8K and 8 weeks. No workaround. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Current heatsink vendor (ThermalTech) cannot quote new geometry until Solidworks model is updated. Blocks thermal validation. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> Holiday launch window closes in 14 weeks. This change needs 8–12. Schedule has zero margin. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Smaller acoustic chamber degrades audio quality — could fail blind listening test vs HomePod. <em>Owner: Acoustics</em></div><div class="msg-mcp"><span class="mcp-pill mcp-jira">Jira</span><span class="mcp-pill mcp-sap">SAP</span></div>')},3500);
       setTimeout(function(){showNextActions(NEXT_ACTIONS.case1)},5000)}},
 
@@ -978,7 +1004,7 @@ const demoSteps=[
       addImpactBadge('dome','info','<strong style="color:var(--blue)">IR SCAN</strong> Check airflow blockage');
       setTimeout(function(){chatMsg('claude','<strong>Root cause analysis \u2014 3 hypotheses:</strong><br><br><strong>1. TIM compression out of spec</strong> (most likely)<br>If gap is 0.6mm vs 0.3mm nom, R_TIM doubles \u2192 +4\u00b0C. Check mounting torque and cross-section.<br><br><strong>2. Chimney airflow blocked</strong><br>Acoustic foam may be obstructing convection path. IR camera the dome exterior for hotspot asymmetry.<br><br><strong>3. FPGA power higher than modeled</strong><br>DPU switching activity may exceed Vivado estimate. Actual TDP could be 14W not 12W \u2192 +6\u00b0C.<br><br><strong>Debug plan:</strong><br>\u2460 Thermocouple on TIM pad \u2014 measure actual R_TIM<br>\u2461 IR camera on dome \u2014 check for hot spots<br>\u2462 XSCT power monitor \u2014 read actual PL power<br>\u2463 Cross-section one unit \u2014 verify TIM compression<br>\u2464 Implement 78\u00b0C early-warning throttle in firmware<div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sw">Solidworks</span></div>');
       },1500);
-      setTimeout(function(){chatMsg('claude','<strong>Spatial analysis — reading from 3D model:</strong><br><br>I\'m measuring the assembly geometry to cross-check thermal path assumptions:<br><br>• <strong>FPGA-to-heatsink gap:</strong> 0.32mm measured at 4 points → within TIM spec (0.15–0.50mm) <span style="color:var(--green)">✓</span><br>• <strong>Heatsink-to-dome clearance:</strong> min 0.08mm at fin [7,7] (center), max 0.14mm at edges → <span style="color:var(--amber)">tight but in spec</span><br>• <strong>Speaker-to-fin distance:</strong> 12.4mm → no acoustic interference path <span style="color:var(--green)">✓</span><br>• <strong>Battery-to-PCB thermal gap:</strong> 1.1mm → gap pad compressed correctly <span style="color:var(--green)">✓</span><br>• <strong>Dome vent area:</strong> calculating from mesh geometry... 38% open area (spec: 40%) → <span style="color:var(--red)">2% below target. Possible airflow restriction.</span><br><br><em>The vent area finding supports hypothesis #2. Dome perforation may have been reduced in last revision without updating the thermal model.</em><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS Fluent</span></div>')},2500);
+      setTimeout(function(){chatMsg('claude','<strong>3D analysis — reading from model:</strong><br><br>I\'m measuring the assembly geometry to cross-check thermal path assumptions:<br><br>• <strong>FPGA-to-heatsink gap:</strong> 0.32mm measured at 4 points → within TIM spec (0.15–0.50mm) <span style="color:var(--green)">✓</span><br>• <strong>Heatsink-to-dome clearance:</strong> min 0.08mm at fin [7,7] (center), max 0.14mm at edges → <span style="color:var(--amber)">tight but in spec</span><br>• <strong>Speaker-to-fin distance:</strong> 12.4mm → no acoustic interference path <span style="color:var(--green)">✓</span><br>• <strong>Battery-to-PCB thermal gap:</strong> 1.1mm → gap pad compressed correctly <span style="color:var(--green)">✓</span><br>• <strong>Dome vent area:</strong> calculating from mesh geometry... 38% open area (spec: 40%) → <span style="color:var(--red)">2% below target. Possible airflow restriction.</span><br><br><em>The vent area finding supports hypothesis #2. Dome perforation may have been reduced in last revision without updating the thermal model.</em><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS Fluent</span></div>')},2500);
       setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Is the failure unit-specific or systemic? Need to test 5+ units at same conditions. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Was the assembly built per torque spec? Check operator log for TIM mounting step. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> No thermal diode logging in current firmware — FW team must add XSCT hooks before next test run. <em>Owner: FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Only 3 thermocouple-instrumented units available. May need to sacrifice 1 for cross-section. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> If root cause is FPGA TDP higher than modeled, heatsink redesign required — same blast radius as Case 1. <em>Owner: HW Eng + FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Reliability test schedule has 2-week window. Debug + retest must fit or DVT slips. <em>Owner: Program Mgr</em></div><div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-jira">Jira</span></div>')},4500);
       setTimeout(function(){updateCascadeCard(14);chatMsg('claude','<strong>Try the fin count explorer</strong> on the heatsink — drag the slider to see how fin count affects thermal margin, FPGA performance, and UX in real time. At 14 fins, margin is comfortable. Drop below 10 and you\'ll see it tighten.<div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-sw">Solidworks</span></div>')},5000);
       setTimeout(function(){showNextActions(NEXT_ACTIONS.case2)},6500)}},
@@ -1033,7 +1059,8 @@ function showDemoOptions(){
   // Hide the other one
   if(demoStep===0){bot.innerHTML=''}else{top.innerHTML=''}
   // Always show all steps; highlight the active one
-  acts.innerHTML=demoSteps.map(function(s,i){
+  var label=demoStep===0?'<span class="chat-prompt-label">Try a prompt</span>':'';
+  acts.innerHTML=label+demoSteps.map(function(s,i){
     var active=i===(demoStep-1);
     var style=active?' style="background:var(--copperBg);border-color:var(--copper);color:var(--copper);font-weight:600"':'';
     return'<button class="chat-act"'+style+' onclick="runDemoStep('+i+')">'+s.btn+'</button>'
@@ -1220,7 +1247,7 @@ function updateAnnotations(){const w=canvas.clientWidth,h=canvas.clientHeight;
 function toggleShareMenu(){var m=document.getElementById('shareMenu');m.classList.toggle('vis')}
 function showARPrompt(){
   document.getElementById('shareMenu').classList.remove('vis');
-  chatMsg('claude','<strong>AR Model Ready</strong><br><br>Open the <strong>Claude app</strong> on your iPhone and tap the spatial icon. The Claude Home speaker will appear in your environment at 1:1 scale.<br><br>You can:<br>• Walk around the model to inspect from any angle<br>• Tap components to see annotations<br>• Place it on your wall to check sizing<br>• Share a screenshot with your team<br><br><span style="color:var(--text3)">Requires iPhone 12+ with iOS 17. Model streams via Claude with spatial reasoning WebSocket — no file download needed.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span></div>');
+  chatMsg('claude','<strong>AR Model Ready</strong><br><br>Open your AR viewer on iPhone and tap the 3D icon. The LLM Home speaker will appear in your environment at 1:1 scale.<br><br>You can:<br>• Walk around the model to inspect from any angle<br>• Tap components to see annotations<br>• Place it on your wall to check sizing<br>• Share a screenshot with your team<br><br><span style="color:var(--text3)">Requires iPhone 12+ with iOS 17. Model streams via the 3D reasoning WebSocket — no file download needed.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span></div>');
 }
 
 // ===== USDZ EXPORT =====
@@ -1253,6 +1280,83 @@ function animate(){requestAnimationFrame(animate);animateExplode();updateCase1Gl
 animate();
 function onResize(){camera.aspect=VP.clientWidth/VP.clientHeight;camera.updateProjectionMatrix();ren.setSize(VP.clientWidth,VP.clientHeight)}
 window.addEventListener('resize',onResize);setTimeout(onResize,0);
+
+// ===== GUIDED TOUR =====
+var _tourStep=-1;
+var _tourSteps=[
+  {
+    title:'Explore the 3D model',
+    body:'Drag to rotate, scroll to zoom. Every component is real geometry with live engineering data behind it \u2014 not a render.',
+    next:'Got it \u2192',
+    overlay:null,
+    pos:function(){return{top:'64px',left:'396px',transform:'none'}},
+    onShow:function(){},onHide:function(){}
+  },
+  {
+    title:'Click any label',
+    body:'Each label is a live data connection \u2014 component specs, open issues, revision history, and relationships to other parts. Try clicking one now.',
+    next:'Next \u2192',
+    overlay:'dim-left',
+    pos:function(){return{top:'64px',left:'396px',transform:'none'}},
+    onShow:function(){document.getElementById('annWrap').classList.add('tour-ann-glow')},
+    onHide:function(){document.getElementById('annWrap').classList.remove('tour-ann-glow')}
+  },
+  {
+    title:'Try a prompt',
+    body:'These prompts show the AI reasoning across CAD, thermal simulation, and supply chain at the same time \u2014 because it can see how the parts connect in 3D.',
+    next:'Next \u2192',
+    overlay:'dim-right',
+    pos:function(){return{top:'64px',left:'396px',transform:'none'}},
+    onShow:function(){document.querySelector('.chat').classList.add('tour-chat-glow')},
+    onHide:function(){document.querySelector('.chat').classList.remove('tour-chat-glow')}
+  },
+  {
+    title:"Once you\u2019re done exploring\u2026",
+    body:'Check out \u201c3D as Code\u201d and the Roadmap in the top nav to see how this could actually be built.',
+    next:'Done',
+    overlay:null,
+    pos:function(){return{top:'64px',left:(window.innerWidth-316)+'px',transform:'none'}},
+    onShow:function(){},onHide:function(){}
+  }
+];
+
+function startTour(){_tourStep=0;_showTourStep(0)}
+
+function _showTourStep(idx){
+  if(idx>=_tourSteps.length){endTour();return}
+  var step=_tourSteps[idx];
+  var ov=document.getElementById('tourOverlay');
+  var ct=document.getElementById('tourCallout');
+  ov.className='tour-overlay'+(step.overlay?' '+step.overlay:'');
+  var dots=_tourSteps.map(function(s,i){return'<span class="tour-dot'+(i===idx?' on':'')+'"></span>'}).join('');
+  var html='<div class="tour-dots">'+dots+'</div><h3>'+step.title+'</h3><p>'+step.body+'</p>';
+  html+='<div class="tour-actions"><button class="tour-skip-btn" onclick="endTour()">Skip tour</button><button class="tour-next-btn" onclick="_nextTourStep()">'+step.next+'</button></div>';
+  ct.innerHTML=html;ct.style.display='block';ct.style.opacity='0';
+  var pos=step.pos();
+  ct.style.top=pos.top||'auto';ct.style.left=pos.left||'auto';
+  ct.style.transform=pos.transform||'';ct.style.bottom='auto';ct.style.right='auto';
+  setTimeout(function(){ct.style.opacity='1'},30);
+  if(step.onShow)step.onShow();
+}
+
+function _nextTourStep(){
+  var step=_tourSteps[_tourStep];
+  if(step&&step.onHide)step.onHide();
+  _tourStep++;_showTourStep(_tourStep);
+}
+
+function endTour(){
+  var step=_tourSteps[_tourStep];
+  if(step&&step.onHide)step.onHide();
+  document.getElementById('tourOverlay').className='tour-overlay';
+  var ct=document.getElementById('tourCallout');
+  ct.style.opacity='0';
+  setTimeout(function(){ct.style.display='none'},250);
+  document.getElementById('annWrap').classList.remove('tour-ann-glow');
+  var chat=document.querySelector('.chat');if(chat)chat.classList.remove('tour-chat-glow');
+}
 </script>
+<div id="tourOverlay" class="tour-overlay"></div>
+<div id="tourCallout" class="tour-callout" style="display:none;opacity:0"></div>
 </body>
 </html>
