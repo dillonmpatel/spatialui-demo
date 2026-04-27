@@ -106,7 +106,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overflow:hid
 .msg-claude{background:#fff;border:1px solid var(--border);border-radius:8px 8px 8px 2px}
 .msg-mcp{font-family:var(--mono);font-size:8px;color:var(--text3);margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}
 .mcp-pill{padding:1px 5px;border-radius:3px;font-size:7px;font-weight:500;letter-spacing:0.03em}
-.mcp-sw{background:rgba(37,99,235,0.1);color:var(--blue)}.mcp-an{background:rgba(180,83,9,0.1);color:var(--amber)}.mcp-al{background:rgba(22,163,74,0.1);color:var(--green)}.mcp-sap{background:rgba(124,58,237,0.1);color:var(--purple)}.mcp-jira{background:rgba(13,148,136,0.1);color:var(--teal)}
+.mcp-sw{background:rgba(37,99,235,0.1);color:var(--blue)}.mcp-an{background:rgba(180,83,9,0.1);color:var(--amber)}.mcp-al{background:rgba(22,163,74,0.1);color:var(--green)}.mcp-sap{background:rgba(124,58,237,0.1);color:var(--purple)}.mcp-jira{background:rgba(13,148,136,0.1);color:var(--teal)}.mcp-gh{background:rgba(36,41,46,0.1);color:#24292e}.mcp-vv{background:rgba(204,68,34,0.1);color:#cc4422}.mcp-fig{background:rgba(162,89,255,0.1);color:#a259ff}
 .chat-actions{padding:4px 10px;display:flex;flex-wrap:wrap;gap:4px}
 .chat-actions-bottom{padding:8px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px}
 .chat-act{font-family:var(--font);font-size:9px;padding:4px 8px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;transition:all 0.15s}
@@ -306,13 +306,13 @@ domeWire.position.y=PUCK_H;domeWire.scale.set(1.002,0.301,1.002);G.add(domeWire)
 const edge=new THREE.Mesh(new THREE.TorusGeometry(DOME_R,WALL*0.8,8,48),new THREE.MeshStandardMaterial({color:0xe8e8e4,roughness:0.5,metalness:0.05}));
 edge.rotation.x=Math.PI/2;edge.position.y=PUCK_H;edge.userData={name:'dome',label:'Edge ring',pn:'CH-1003'};G.add(edge);cl.push(edge);
 
-// Anthropic logo disc on dome apex
+// Brand logo disc on dome apex
 var logoCvs=document.createElement('canvas');logoCvs.width=256;logoCvs.height=256;
 var lCtx=logoCvs.getContext('2d');
 lCtx.clearRect(0,0,256,256);
 var lc=128;
 lCtx.strokeStyle='#d4703a';lCtx.lineCap='round';
-// Anthropic spark — asymmetric spokes, varying lengths and angles
+// Brand mark — asymmetric spokes, varying lengths and angles
 var rays=[
   {a:-1.57,len:49,w:4.5},  // up
   {a:1.57,len:42,w:4},     // down
@@ -749,9 +749,9 @@ var NEXT_ACTIONS={
     {action:'Get K24 evaluation board for 30 tok/s user testing',owner:'FW Eng',impact:'Validates whether reduced perf is acceptable'}
   ],
   case2:[
-    {action:'Cross-section one unit to measure actual TIM gap',owner:'HW Eng',impact:'Confirms or eliminates hypothesis #1 in 1 day'},
-    {action:'Add XSCT thermal logging to firmware',owner:'FW Eng',impact:'Enables real-time debug on remaining units'},
-    {action:'IR camera scan of 3 units under load',owner:'HW Eng',impact:'Reveals hotspot pattern — airflow vs TIM root cause'}
+    {action:'Block PR #487 merge until Option A vs B decision is made',owner:'HW Eng + FW Eng + PM',impact:'Prevents thermal failure escape into reliability test'},
+    {action:'If Option A: implement KWS-gated beamform, validate −28dB null depth',owner:'FW Eng',impact:'~3 days. SW-only — no schedule hit.'},
+    {action:'If Option B: kick off ANSYS resim + dome clearance check before CNC quote',owner:'HW Eng',impact:'2wk ANSYS + $500 retool; cascades into dome rework'}
   ],
   case3:[
     {action:'Re-inspect last 50 units with 12-point CMM program',owner:'Quality',impact:'Bounds the scope — how many units affected?'},
@@ -759,9 +759,9 @@ var NEXT_ACTIONS={
     {action:'Update DWG-1001 with OD roundness callout',owner:'HW Eng',impact:'Closes the spec gap that allowed this escape'}
   ],
   case4:[
-    {action:'Design TIM alignment go/no-go fixture',owner:'HW Eng',impact:'Reduces Step 4 defect rate from ~5% to <1%'},
-    {action:'Source portable acoustic test enclosure',owner:'Quality',impact:'$2.5K — enables audio test at CM facility'},
-    {action:'Schedule operator training 2 weeks before DVT build',owner:'Program Mgr',impact:'CM readiness for 500-unit DVT run'}
+    {action:'Send RFQ to all 3 packaging suppliers (PKG-RFQ-101..103)',owner:'Supply Chain',impact:'Pricing back in 2 business days; locks vendor by wk 7'},
+    {action:'Finalize FCC ID + IC ID before artwork lock',owner:'Quality',impact:'Required to release print files; placeholder blocks tooling'},
+    {action:'Reserve drop/shock/vibe lab time for wk 12 (2wk buffer to DVT)',owner:'Reliability',impact:'Lab books 4 wk out — book now or slip into wk 13'}
   ]
 };
 
@@ -874,7 +874,7 @@ function removeGanttChart(){var el=document.getElementById('gantt-global');if(el
 
 // ===== CASE 1 GLOW SHELLS =====
 var case1Glows=[];
-function clearCase1Glow(){case1Glows.forEach(function(g){G.remove(g.mesh)});case1Glows=[]}
+function clearCase1Glow(){case1Glows.forEach(function(g){G.remove(g.mesh)});case1Glows=[];if(typeof clearCase4Packaging==='function')clearCase4Packaging()}
 function updateCase1Glows(){var t=Date.now()*0.003;var pulse=0.5+0.5*Math.sin(t);case1Glows.forEach(function(g){g.mesh.position.copy(g.parent.position);g.mesh.material.opacity=g.baseOpacity*(0.4+0.6*pulse);g.mesh.material.emissiveIntensity=g.baseEmissive*(0.4+0.6*pulse)})}
 
 // ===== ASSEMBLY STEP VIEWER (Case 4) =====
@@ -978,36 +978,39 @@ const demoSteps=[
       setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> ID has not confirmed 30% is firm — could they accept 20%? 20% shrink keeps current battery and speakers. <em>Owner: PM</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> If K24 is viable at 30 tok/s, does product spec accept that? User research needed. <em>Owner: PM</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> UL certification for new battery config adds $8K and 8 weeks. No workaround. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Current heatsink vendor (ThermalTech) cannot quote new geometry until Solidworks model is updated. Blocks thermal validation. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> Holiday launch window closes in 14 weeks. This change needs 8–12. Schedule has zero margin. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Smaller acoustic chamber degrades audio quality — could fail blind listening test vs HomePod. <em>Owner: Acoustics</em></div><div class="msg-mcp"><span class="mcp-pill mcp-jira">Jira</span><span class="mcp-pill mcp-sap">SAP</span></div>')},3500);
       setTimeout(function(){showNextActions(NEXT_ACTIONS.case1)},5000)}},
 
-  {btn:'Case 2: Thermal test failure',user:'Reliability testing shows FPGA hitting 92\u00b0C after 4 hours. Help me debug.',
-    claude:'<strong style="color:var(--red)">Thermal failure detected.</strong> T_j = 92\u00b0C exceeds 85\u00b0C target. FPGA throttling to 30 tok/s. Tracing the thermal path for root cause.',
-    mcp:['ANSYS Fluent','Solidworks','Altium'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
+  {btn:'Case 2: Pre-merge thermal review',user:'PR #487 adds always-on 6-mic beamforming + speaker enhancement DSP. About to merge to main — anything I should know?',
+    claude:'<strong style="color:var(--amber)">Reviewing PR #487 against thermal constraints.</strong> Pulling the diff, current PL power profile, and the 3D thermal model.',
+    mcp:['GitHub','Vivado','Solidworks','ANSYS Fluent'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
       if(!exploded)toggleExplode();
-      // Glow shells on thermal path, wireframe unrelated
+      // Glow shells: FPGA (predicted overheating) + heatsink (undersized for new load)
       var critMat=new THREE.MeshStandardMaterial({color:0xee4422,emissive:0xee4422,emissiveIntensity:0.5,transparent:true,opacity:0.1,side:THREE.DoubleSide,depthWrite:false});
       var warnMat2=new THREE.MeshStandardMaterial({color:0xcc8800,emissive:0xcc8800,emissiveIntensity:0.4,transparent:true,opacity:0.08,side:THREE.DoubleSide,depthWrite:false});
-      var infoMat=new THREE.MeshStandardMaterial({color:0x2563eb,emissive:0x2563eb,emissiveIntensity:0.3,transparent:true,opacity:0.08,side:THREE.DoubleSide,depthWrite:false});
       var wireMat=new THREE.MeshBasicMaterial({color:0x888888,wireframe:true,transparent:true,opacity:0.25});
       function addGlow(mesh,mat,s){var g=new THREE.Mesh(mesh.geometry.clone(),mat.clone());g.position.copy(mesh.position);g.rotation.copy(mesh.rotation);g.scale.copy(mesh.scale).multiplyScalar(s||1.05);G.add(g);case1Glows.push({mesh:g,parent:mesh,baseOpacity:mat.opacity,baseEmissive:mat.emissiveIntensity})}
-      // Critical: FPGA (overheating)
       addGlow(fpga,critMat,1.05);
-      // Warn: heatsink + fins (TIM interface suspect)
       addGlow(hsMesh,warnMat2,1.05);finMeshes.forEach(function(f){addGlow(f,warnMat2,1.05)});
-      // Info: dome (airflow check)
-      addGlow(dome,infoMat,1.02);
-      // Wireframe unrelated
       [batt,pcb,magnet].forEach(function(m){m.material=wireMat.clone()});
       spkMeshes.forEach(function(s){s.material=wireMat.clone()});
-      showCOGS(38,'Under investigation',0);
+      showCOGS(38,'PR #487 — pre-merge review',0);
       clearImpactBadges();
-      addImpactBadge('fpga','crit','<strong style="color:var(--red)">92°C</strong> Exceeds 85°C limit');
-      addImpactBadge('hsbase','warn','<strong style="color:var(--amber)">CHECK TIM</strong> Gap may be out of spec<br><svg width="160" height="60" viewBox="0 0 160 60" style="margin-top:4px;display:block"><text x="0" y="8" font-size="5" fill="#8a8880" font-family="DM Mono">T_j vs Time (4hr soak)</text><line x1="15" y1="12" x2="15" y2="55" stroke="rgba(0,0,0,0.08)"/><line x1="15" y1="55" x2="155" y2="55" stroke="rgba(0,0,0,0.08)"/><text x="12" y="18" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">95</text><text x="12" y="32" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">85</text><text x="12" y="48" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">72</text><line x1="15" y1="30" x2="155" y2="30" stroke="rgba(220,38,38,0.2)" stroke-dasharray="2 2"/><text x="157" y="32" font-size="4" fill="rgba(220,38,38,0.4)" font-family="DM Mono">85°C limit</text><path d="M15,48 L40,42 L65,38 L90,35 L115,33 L140,32 L155,31" fill="none" stroke="#2563eb" stroke-width="1.2" opacity="0.5"/><text x="50" y="42" font-size="4" fill="#2563eb" font-family="DM Mono">Simulated</text><path d="M15,48 L40,40 L65,34 L90,28 L115,22 L140,19 L155,17" fill="none" stroke="#dc2626" stroke-width="1.5"/><text x="120" y="15" font-size="4" fill="#dc2626" font-family="DM Mono">Actual</text><text x="15" y="59" font-size="4" fill="#8a8880" font-family="DM Mono">0h</text><text x="85" y="59" font-size="4" fill="#8a8880" font-family="DM Mono">2h</text><text x="150" y="59" font-size="4" fill="#8a8880" font-family="DM Mono">4h</text></svg>');
-      addImpactBadge('dome','info','<strong style="color:var(--blue)">IR SCAN</strong> Check airflow blockage');
-      setTimeout(function(){chatMsg('claude','<strong>Root cause analysis \u2014 3 hypotheses:</strong><br><br><strong>1. TIM compression out of spec</strong> (most likely)<br>If gap is 0.6mm vs 0.3mm nom, R_TIM doubles \u2192 +4\u00b0C. Check mounting torque and cross-section.<br><br><strong>2. Chimney airflow blocked</strong><br>Acoustic foam may be obstructing convection path. IR camera the dome exterior for hotspot asymmetry.<br><br><strong>3. FPGA power higher than modeled</strong><br>DPU switching activity may exceed Vivado estimate. Actual TDP could be 14W not 12W \u2192 +6\u00b0C.<br><br><strong>Debug plan:</strong><br>\u2460 Thermocouple on TIM pad \u2014 measure actual R_TIM<br>\u2461 IR camera on dome \u2014 check for hot spots<br>\u2462 XSCT power monitor \u2014 read actual PL power<br>\u2463 Cross-section one unit \u2014 verify TIM compression<br>\u2464 Implement 78\u00b0C early-warning throttle in firmware<div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-al">Altium</span><span class="mcp-pill mcp-sw">Solidworks</span></div>');
-      },1500);
-      setTimeout(function(){chatMsg('claude','<strong>3D analysis — reading from model:</strong><br><br>I\'m measuring the assembly geometry to cross-check thermal path assumptions:<br><br>• <strong>FPGA-to-heatsink gap:</strong> 0.32mm measured at 4 points → within TIM spec (0.15–0.50mm) <span style="color:var(--green)">✓</span><br>• <strong>Heatsink-to-dome clearance:</strong> min 0.08mm at fin [7,7] (center), max 0.14mm at edges → <span style="color:var(--amber)">tight but in spec</span><br>• <strong>Speaker-to-fin distance:</strong> 12.4mm → no acoustic interference path <span style="color:var(--green)">✓</span><br>• <strong>Battery-to-PCB thermal gap:</strong> 1.1mm → gap pad compressed correctly <span style="color:var(--green)">✓</span><br>• <strong>Dome vent area:</strong> calculating from mesh geometry... 38% open area (spec: 40%) → <span style="color:var(--red)">2% below target. Possible airflow restriction.</span><br><br><em>The vent area finding supports hypothesis #2. Dome perforation may have been reduced in last revision without updating the thermal model.</em><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-an">ANSYS Fluent</span></div>')},2500);
-      setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Is the failure unit-specific or systemic? Need to test 5+ units at same conditions. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Was the assembly built per torque spec? Check operator log for TIM mounting step. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> No thermal diode logging in current firmware — FW team must add XSCT hooks before next test run. <em>Owner: FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Only 3 thermocouple-instrumented units available. May need to sacrifice 1 for cross-section. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> If root cause is FPGA TDP higher than modeled, heatsink redesign required — same blast radius as Case 1. <em>Owner: HW Eng + FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Reliability test schedule has 2-week window. Debug + retest must fit or DVT slips. <em>Owner: Program Mgr</em></div><div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS</span><span class="mcp-pill mcp-jira">Jira</span></div>')},4500);
-      setTimeout(function(){updateCascadeCard(14);chatMsg('claude','<strong>Try the fin count explorer</strong> on the heatsink — drag the slider to see how fin count affects thermal margin, FPGA performance, and UX in real time. At 14 fins, margin is comfortable. Drop below 10 and you\'ll see it tighten.<div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-sw">Solidworks</span></div>')},5000);
-      setTimeout(function(){showNextActions(NEXT_ACTIONS.case2)},6500)}},
+      addImpactBadge('fpga','crit','<strong style="color:var(--red)">+4.4W</strong> 11.8W → 16.2W (Vivado est.)');
+      addImpactBadge('hsbase','crit','<strong style="color:var(--red)">UNDERSIZED</strong> R_θ 4.2 K/W sized for 12W');
+      addImpactBadge('dome','warn','<strong style="color:var(--amber)">CLEARANCE</strong> 0.08mm min at fin [7,7]');
+      // Stage 1 — codebase awareness
+      setTimeout(function(){chatMsg('claude','<strong>① Reading the PR</strong><br><br>Pulled diff from <code>firmware/dsp/beamform.c</code>, <code>firmware/dsp/spk_enhance.c</code>, and <code>vivado/pl_top.tcl</code>:<br><br>• <code>+ axis_beamformer_6ch</code> — new IP block, 1.8W (Vivado est.)<br>• <code>+ spk_enhance_dsp</code> — new IP block, 1.2W<br>• <code>~ kws_alwayson</code> — duty cycle 30% → 100%, +0.6W<br>• <code>~ clk_wiz_0</code> — DSP clock 200 → 250MHz, +0.8W dynamic<br><br><strong>PL power: 11.8W → 16.2W steady-state</strong> (+37%)<br><br><span style="color:var(--text3)">PR description claims &quot;no measurable thermal impact.&quot; Let me check that against the actual heatsink.</span><div class="msg-mcp"><span class="mcp-pill mcp-gh">GitHub</span><span class="mcp-pill mcp-vv">Vivado</span></div>')},1500);
+      // Stage 2 — 3D awareness
+      setTimeout(function(){chatMsg('claude','<strong>② Reading the 3D model</strong><br><br>Pulled the EVT assembly and measured the thermal path:<br><br>• <strong>Heatsink:</strong> C110 copper, 14 fins, 32×32mm base<br>• <strong>R_θ_ja:</strong> 4.2 K/W — sized for 12W TDP, not 16W<br>• <strong>Dome clearance:</strong> 0.08mm min at fin [7,7] — already tight<br>• <strong>FPGA-to-HS TIM gap:</strong> 0.32mm, R_TIM = 0.18 K/W <span style="color:var(--green)">✓</span><br>• <strong>Vent area:</strong> 40% open <span style="color:var(--green)">✓</span><br><br><span style="color:var(--text3)">The thermal path itself is clean. The heatsink capacity is the constraint.</span><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span></div>')},2800);
+      // Stage 3 — simulation awareness
+      setTimeout(function(){chatMsg('claude','<strong>③ Re-running ANSYS Fluent at 16.2W</strong><br><svg width="200" height="84" viewBox="0 0 200 84" style="margin:6px 0;display:block"><text x="0" y="8" font-size="5" fill="#8a8880" font-family="DM Mono">T_j vs Time @ 25°C ambient</text><line x1="22" y1="14" x2="22" y2="70" stroke="rgba(0,0,0,0.08)"/><line x1="22" y1="70" x2="195" y2="70" stroke="rgba(0,0,0,0.08)"/><text x="20" y="22" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">100</text><text x="20" y="32" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">85</text><text x="20" y="48" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">60</text><text x="20" y="70" font-size="4" fill="#8a8880" text-anchor="end" font-family="DM Mono">25</text><line x1="22" y1="32" x2="195" y2="32" stroke="rgba(220,38,38,0.35)" stroke-dasharray="2 2"/><text x="158" y="30" font-size="4" fill="rgba(220,38,38,0.55)" font-family="DM Mono">85°C limit</text><path d="M22,70 Q55,46 95,38 Q135,35 195,34" fill="none" stroke="#22aa55" stroke-width="1.2" opacity="0.7"/><text x="148" y="40" font-size="4" fill="#22aa55" font-family="DM Mono">11.8W → 78°C</text><path d="M22,70 Q55,38 95,28 Q135,25 195,24" fill="none" stroke="#ee4422" stroke-width="1.5"/><text x="118" y="20" font-size="4" fill="#ee4422" font-family="DM Mono">16.2W → 94°C ✗</text><text x="22" y="80" font-size="4" fill="#8a8880" font-family="DM Mono">0h</text><text x="100" y="80" font-size="4" fill="#8a8880" font-family="DM Mono">2h</text><text x="190" y="80" font-size="4" fill="#8a8880" font-family="DM Mono">4h</text></svg><strong style="color:var(--red)">T_j = 94°C steady state</strong> at 25°C ambient. Exceeds 85°C limit by 9°C.<br><br>At 60°C ambient (reliability soak), T_j hits 85°C at <strong>1h 12min</strong> and 94°C by hour 4 — the same failure signature as historical thermal incidents.<br><br><em>If this PR merges, it ships to reliability test. It fails 4 hours into the 60°C soak.</em><div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span></div>')},4100);
+      // Stage 4 — A/B options
+      setTimeout(function(){chatMsg('claude','<strong>Two paths forward.</strong> Both are real engineering trade-offs, not workarounds:<div id="case2-opts" style="display:flex;gap:6px;margin:8px 0"><button class="chat-act" id="opt-a-btn" style="flex:1" onclick="case2SelectOption(&apos;A&apos;)">Option A · Gate feature</button><button class="chat-act" id="opt-b-btn" style="flex:1" onclick="case2SelectOption(&apos;B&apos;)">Option B · Redesign HS</button></div><div id="case2-opt-detail"></div><div class="msg-mcp"><span class="mcp-pill mcp-an">ANSYS Fluent</span><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-gh">GitHub</span></div>');
+        setTimeout(function(){case2SelectOption('A')},250);
+      },5400);
+      // OIR
+      setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Has product team signed off on −28dB null vs −32dB if Option A? <em>Owner: PM</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Did Vivado power estimate include worst-case switching activity, or typical? Re-run with vector-based SAIF. <em>Owner: FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Heatsink vendor (ThermalTech) needs 2 weeks for new geometry quote — blocks Option B start. <em>Owner: Supply Chain</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Dome retool would cascade into Case 1’s blast radius (drawings, CMM program). Confirm before committing. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> Holiday launch in 14 weeks. Option B eats 3–4 weeks of margin. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> If 6-mic beamforming is a marketing pillar, Option A may not be acceptable. <em>Owner: PM</em></div><div class="msg-mcp"><span class="mcp-pill mcp-jira">Jira</span></div>')},6700);
+      // Why this matters
+      setTimeout(function(){chatMsg('claude','<strong style="color:var(--copper)">Why this matters</strong><br><br>Without joint awareness of the codebase, the 3D model, and the thermal sim, this PR merges. It ships to reliability test. It fails 4 hours into the 60°C soak — a six-week recovery (debug, root-cause, redesign, requalify).<br><br>The bug is caught here, at the diff, in seconds.<br><br><span style="color:var(--text3)">Try the fin count explorer on the heatsink — slide between 14 (current, fails at 16W) and 18 (Option B target).</span>')},8000);
+      setTimeout(function(){showNextActions(NEXT_ACTIONS.case2)},9300)}},
 
   {btn:'Case 3: Enclosure fails inspection',user:'The dome and base don\'t fit together. Inspection is rejecting units.',
     claude:'<strong style="color:var(--red)">Assembly fit failure.</strong> Pulling tolerance chain and inspection data to find the gap.',
@@ -1029,27 +1032,30 @@ const demoSteps=[
       setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> How many of the last 200 units are affected? Re-inspect sample of 50 to bound the problem. <em>Owner: Quality</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Is the vendor\u0027s tool maintenance schedule documented? Request maintenance log. <em>Owner: Supply Chain</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> Current CMM program checks OD at 3 points only — insufficient for detecting taper from tool wear. Update to 12-point scan. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> 2D drawing DWG-1001-B does not call out OD roundness — only diameter. Add roundness callout 0.02mm. <em>Owner: HW Eng</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> If >50 units are affected, rework cost exceeds $300 and delays EVT completion by 1–2 weeks. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Tightening OD tolerance to ±0.05mm may increase vendor reject rate — discuss capability with Apex CNC before committing. <em>Owner: Supply Chain</em></div><div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-jira">Jira</span></div>')},3500);
       setTimeout(function(){showNextActions(NEXT_ACTIONS.case3)},5000)}},
 
-  {btn:'Case 4: Create assembly SOPs',user:'Generate assembly and test SOPs with CAD screenshots',
-    claude:'<strong>Assembly SOP — CH-ASM-001 rev A</strong><br><br>Click each step to see the 3D assembly sequence:',
-    mcp:['Solidworks','Jira'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
-      if(!exploded)toggleExplode();
-      showCOGS(38,'DVT baseline',0);
+  {btn:'Case 4: Packaging proposal',user:'DVT is in 14 weeks. Need a retail packaging proposal — envelope sized to the model, artwork using our Figma brand kit, supplier shortlist, and a reliability test schedule that lands before the freeze.',
+    claude:'<strong>Generating retail packaging proposal.</strong> Pulling brand assets from Figma, sizing the envelope from the assembly, pricing suppliers, and back-planning the test schedule from the 14-week DVT.',
+    mcp:['Figma','Solidworks','SAP','Jira'],action(){clearFloatCards();resetMats();removeGanttChart();clearCMMViz();clearCase1Glow();
+      if(exploded)toggleExplode();
+      showCase4Packaging();
+      showCOGS(39,'+ $1.45 packaging',+1);
       clearImpactBadges();
-      setTimeout(function(){
-        var h='';
-        ASM_STEPS.forEach(function(s,i){
-          var isCrit=i===3;
-          h+='<div style="display:flex;gap:6px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="showAssemblyStep('+i+')">';
-          h+='<span style="width:18px;height:18px;border-radius:50%;background:'+(isCrit?'var(--amber)':'var(--blue)')+';color:#fff;font-size:8px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(i+1)+'</span>';
-          h+='<div style="font-size:9px;line-height:1.4"><strong>'+s.name+'</strong><br><span style="color:var(--text3)">'+s.desc+'</span></div></div>';
-        });
-        chatMsg('claude',h+'<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-jira">Jira</span></div>');
-        setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Test SOP ▾</span><div class="oir-body"><strong>Test 1: POST</strong> — 24V power → LED blue → boot <30s<br><strong>Test 2: Thermal soak</strong> — 60 min, T_j <85°C<br><strong>Test 3: Audio</strong> — 20Hz–20kHz, SPL >78dB, THD <2%<br><strong>Test 4: Fit</strong> — Dome gap 0.15 ±0.05mm<br><strong>Test 5: Inference</strong> — 45 tok/s sustained</div>');
-          setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Operator training plan needed 2wk before DVT. <em>Owner: Program Mgr</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> TIM step needs go/no-go fixture. <em>Owner: HW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> XSCT not on production fixture — need UART alt. <em>Owner: FW Eng</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> CM has no anechoic chamber ($2.5K). <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Step 4 torque near pump-out threshold. <em>Owner: HW Eng</em></div>');
-            setTimeout(function(){showNextActions(NEXT_ACTIONS.case4)},1500)
-          },2000)
-        },1500)
-      },800)}},
+      addImpactBadge('dome','info','<strong style="color:var(--copper)">PACKAGE</strong> 250×250×90mm B-flute');
+      addImpactBadge('hsbase','info','<strong style="color:var(--copper)">ARTWORK</strong> Figma · Box-Front-CH1001');
+      // Stage 1 — Figma artwork
+      setTimeout(function(){chatMsg('claude','<strong>① Figma MCP — brand kit pulled</strong><br><br>Loaded tokens from <code>LLM Home / Packaging</code> frame:<br>• Primary: <span style="display:inline-block;width:10px;height:10px;background:#FF7A3A;border-radius:2px;vertical-align:middle"></span> Copper-Orange <code>#FF7A3A</code><br>• Type: DM Sans · DM Mono<br>• Components: <code>regulatory-marks-strip</code>, <code>eco-labels</code>, <code>model-id-block</code>, <code>lh_logo_white.svg</code><br><br><strong>Generated artwork — Box-Front-CH1001 (front face)</strong><svg viewBox="0 0 200 240" width="180" height="216" style="display:block;margin:8px auto;border:1px solid var(--border);border-radius:4px"><rect width="200" height="240" fill="#FF7A3A"/><text x="100" y="32" font-family="DM Sans,sans-serif" font-size="13" font-weight="600" fill="#fff" text-anchor="middle">llm home</text><text x="100" y="44" font-family="DM Mono,monospace" font-size="5" fill="#fff" text-anchor="middle" opacity="0.78">CH-1001 · Smart Speaker</text><circle cx="100" cy="125" r="42" fill="none" stroke="#fff" stroke-width="1.4" opacity="0.6"/><circle cx="100" cy="125" r="26" fill="none" stroke="#fff" stroke-width="0.7" opacity="0.4"/><circle cx="100" cy="125" r="6" fill="#fff" opacity="0.85"/><g font-family="DM Mono,monospace" font-size="4" fill="#fff" font-weight="600" text-anchor="middle"><rect x="22" y="183" width="22" height="9" fill="rgba(255,255,255,0.18)" rx="1"/><text x="33" y="190">FCC</text><rect x="48" y="183" width="22" height="9" fill="rgba(255,255,255,0.18)" rx="1"/><text x="59" y="190">CE</text><rect x="74" y="183" width="22" height="9" fill="rgba(255,255,255,0.18)" rx="1"/><text x="85" y="190">RoHS</text><rect x="100" y="183" width="22" height="9" fill="rgba(255,255,255,0.18)" rx="1"/><text x="111" y="190">WEEE</text><rect x="126" y="183" width="22" height="9" fill="rgba(255,255,255,0.18)" rx="1"/><text x="137" y="190">IC</text><rect x="152" y="183" width="22" height="9" fill="rgba(255,255,255,0.18)" rx="1"/><text x="163" y="190">RCM</text></g><text x="100" y="207" font-family="DM Mono,monospace" font-size="4.2" fill="#fff" text-anchor="middle">FCC ID: 2A###-CH1001 · IC: ####A-CH1001</text><text x="100" y="217" font-family="DM Mono,monospace" font-size="4" fill="#fff" text-anchor="middle" opacity="0.85">Recyclable · Li-Ion 3000mAh · Made in [TBD]</text><text x="100" y="227" font-family="DM Mono,monospace" font-size="3.6" fill="#fff" text-anchor="middle" opacity="0.62">Designed in San Francisco · [Brand] Inc. · 2026</text></svg><span style="color:var(--text3)">Artwork lives in Figma at <code>fig.com/LLM-Home/Packaging?node=Box-Front-CH1001</code>. Lid + back faces auto-generated from the same component set.</span><div class="msg-mcp"><span class="mcp-pill mcp-fig">Figma</span></div>')},1500);
+      // Stage 2 — 3D envelope sized
+      setTimeout(function(){chatMsg('claude','<strong>② Envelope sized from the 3D model</strong><br><br>Pulled the EVT assembly bounding box and added foam allowance:<br><br>• <strong>Product OD:</strong> 220mm · <strong>height:</strong> 32mm puck + 26mm dome = 58mm<br>• <strong>EPE foam tray:</strong> 12mm on all sides → cavity 244×244×82mm<br>• <strong>Outer carton:</strong> 250×250×90mm, B-flute corrugated, ECT 32<br>• <strong>Volumetric weight:</strong> 0.84kg → DIM 1.4kg (saves $0.30/u shipping)<br><br><strong>Materials BOM:</strong><br>• 1× corrugated outer (printed 4-color)<br>• 1× molded EPE foam tray<br>• 1× quick-start card (folded A6, 4pp)<br>• 1× compliance/safety leaflet (A7, 6pp)<br>• 1× tamper-evident seal<div class="msg-mcp"><span class="mcp-pill mcp-sw">Solidworks</span><span class="mcp-pill mcp-fig">Figma</span></div>')},2800);
+      // Stage 3 — Suppliers
+      setTimeout(function(){chatMsg('claude','<strong>③ Supplier shortlist (3 quotes pulled)</strong><br><div style="font-family:var(--mono);font-size:8px;line-height:1.5;margin:8px 0"><div style="display:flex;border-bottom:1px solid var(--border);padding:3px 0;font-weight:600;color:var(--text3);font-size:7px;text-transform:uppercase;letter-spacing:0.04em"><span style="flex:1.6;padding-left:6px">Supplier</span><span style="width:38px">Lead</span><span style="width:42px">MOQ</span><span style="width:42px">Cost/u</span><span style="width:48px">Sample</span></div><div class="case4-vendor-row" style="display:flex;padding:5px 0;border-left:3px solid transparent;cursor:pointer" onclick="case4SelectVendor(0)"><span style="flex:1.6;padding-left:3px">ULINE</span><span style="width:38px;color:var(--green)">4 wk</span><span style="width:42px">500</span><span style="width:42px;color:var(--green)">$1.10</span><span style="width:48px">$550</span></div><div class="case4-vendor-row" style="display:flex;padding:5px 0;border-left:3px solid transparent;cursor:pointer" onclick="case4SelectVendor(1)"><span style="flex:1.6;padding-left:3px">PackOptima ★</span><span style="width:38px;color:var(--amber)">5 wk</span><span style="width:42px">800</span><span style="width:42px">$1.45</span><span style="width:48px">$1,160</span></div><div class="case4-vendor-row" style="display:flex;padding:5px 0;border-left:3px solid transparent;cursor:pointer" onclick="case4SelectVendor(2)"><span style="flex:1.6;padding-left:3px">Sealed Air</span><span style="width:38px;color:var(--red)">6 wk</span><span style="width:42px">1,000</span><span style="width:42px;color:var(--red)">$1.85</span><span style="width:48px">$1,850</span></div><div id="case4-vendor-detail"></div></div><span style="color:var(--text3)">Click a row to see trade-offs and send an RFQ.</span><div class="msg-mcp"><span class="mcp-pill mcp-sap">SAP</span></div>');
+        setTimeout(function(){case4SelectVendor(1)},250);
+      },4100);
+      // Stage 4 — Reliability schedule
+      setTimeout(function(){chatMsg('claude','<strong>④ Reliability test plan — back-planned from DVT</strong><br><div style="font-family:var(--mono);font-size:8px;line-height:1.5;margin:8px 0"><div style="font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">DVT freeze: wk 14 · Samples must arrive wk 12 (2-week buffer)</div><div style="display:flex;align-items:center;margin:3px 0"><span style="width:88px;font-size:7px;color:var(--text2)">ISTA 3A drop</span><span style="flex:1;height:10px;background:var(--bg2);border-radius:2px;position:relative"><span style="position:absolute;left:80%;width:6%;height:100%;background:var(--red);border-radius:2px"></span></span><span style="width:32px;font-size:7px;color:var(--text3);text-align:right">wk 12</span></div><div style="display:flex;align-items:center;margin:3px 0"><span style="width:88px;font-size:7px;color:var(--text2)">Shock 50G/11ms</span><span style="flex:1;height:10px;background:var(--bg2);border-radius:2px;position:relative"><span style="position:absolute;left:82%;width:5%;height:100%;background:var(--amber);border-radius:2px"></span></span><span style="width:32px;font-size:7px;color:var(--text3);text-align:right">wk 12</span></div><div style="display:flex;align-items:center;margin:3px 0"><span style="width:88px;font-size:7px;color:var(--text2)">Random vibe 1.04 Grms</span><span style="flex:1;height:10px;background:var(--bg2);border-radius:2px;position:relative"><span style="position:absolute;left:86%;width:5%;height:100%;background:var(--amber);border-radius:2px"></span></span><span style="width:32px;font-size:7px;color:var(--text3);text-align:right">wk 13</span></div><div style="display:flex;align-items:center;margin:3px 0"><span style="width:88px;font-size:7px;color:var(--text2)">Compression UN/ISTA</span><span style="flex:1;height:10px;background:var(--bg2);border-radius:2px;position:relative"><span style="position:absolute;left:90%;width:4%;height:100%;background:var(--green);border-radius:2px"></span></span><span style="width:32px;font-size:7px;color:var(--text3);text-align:right">wk 13</span></div><div style="display:flex;align-items:center;margin:3px 0"><span style="width:88px;font-size:7px;color:var(--text2)">Climate 60°C/95%RH</span><span style="flex:1;height:10px;background:var(--bg2);border-radius:2px;position:relative"><span style="position:absolute;left:93%;width:4%;height:100%;background:var(--green);border-radius:2px"></span></span><span style="width:32px;font-size:7px;color:var(--text3);text-align:right">wk 14</span></div><div style="display:flex;align-items:center;margin:8px 0 0;padding-top:5px;border-top:1px solid var(--border)"><span style="width:88px;font-size:7px;color:var(--copper);font-weight:600">DVT freeze</span><span style="flex:1;height:10px;position:relative"><span style="position:absolute;right:0;width:1px;height:100%;background:var(--copper);box-shadow:-2px 0 6px var(--copper)"></span></span><span style="width:32px;font-size:7px;color:var(--copper);text-align:right;font-weight:600">wk 14</span></div></div><strong>Backstop:</strong> packaging samples must land at the QM lab by <strong>wk 12</strong>. With PackOptima at 5wk lead, RFQ must lock by <strong>wk 7</strong>. With Sealed Air (6wk), RFQ must lock by <strong>wk 6</strong> — zero margin.<div class="msg-mcp"><span class="mcp-pill mcp-jira">Jira</span></div>')},5400);
+      // OIR
+      setTimeout(function(){chatMsg('claude','<span class="oir-toggle" onclick="this.nextElementSibling.classList.toggle(\'vis\')">Opens / Issues / Risks ▾</span><div class="oir-body"><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Drop survival target — 4ft (consumer carry) or 6ft (FedEx Ground)? Determines fragility class. <em>Owner: Reliability + PM</em><br><span style="color:var(--red)">●</span> <strong>OPEN:</strong> Window in box (Y/N)? Adds $0.18/u and +1wk lead. <em>Owner: PM</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> FCC ID not finalized — artwork ships with placeholder <code>2A###-CH1001</code>. Print files cannot lock until ID issued. <em>Owner: Quality</em><br><span style="color:var(--amber)">●</span> <strong>ISSUE:</strong> PackOptima FSC stock at 70% — confirm available volume before committing. <em>Owner: Supply Chain</em><br><span style="color:var(--red)">●</span> <strong>RISK:</strong> If RFQ slips past wk 7, only ULINE (4wk) can hit reliability — locks us into stock kraft, no eco-flute. <em>Owner: Program Mgr</em><br><span style="color:var(--amber)">●</span> <strong>RISK:</strong> Fragility class B-3 not yet validated — assumes glass-free, magnet-encased. Confirm with HW. <em>Owner: HW Eng</em></div><div class="msg-mcp"><span class="mcp-pill mcp-jira">Jira</span><span class="mcp-pill mcp-sap">SAP</span></div>')},6700);
+      // Closing
+      setTimeout(function(){chatMsg('claude','<strong style="color:var(--copper)">Why this matters</strong><br><br>Packaging is usually a wk-10 panic. By that point, RFQs return after the slot is gone — teams settle for stock kraft or slip the launch. Reading the 3D model, the Figma brand kit, and the supplier MCP together turns a 4-week scramble into a 1-day proposal.<br><br><span style="color:var(--text3)">Click a vendor row above to compare trade-offs and send an RFQ.</span>')},8000);
+      setTimeout(function(){showNextActions(NEXT_ACTIONS.case4)},9300)}},
 ];
 let demoStep=0;
 function showDemoOptions(){
@@ -1079,7 +1085,7 @@ function runDemoStep(idx){
   chatMsg('user',s.user);
   const t=chatMsg('claude','<span class="typing">Analyzing...</span>');
   setTimeout(()=>{
-    const pills={'Solidworks':'sw','ANSYS Fluent':'an','ANSYS':'an','Altium':'al','SAP':'sap','Jira':'jira'};
+    const pills={'Solidworks':'sw','ANSYS Fluent':'an','ANSYS':'an','Altium':'al','SAP':'sap','Jira':'jira','GitHub':'gh','Vivado':'vv','Figma':'fig'};
     let html=s.claude;
     if(s.mcp)html+='<div class="msg-mcp">'+s.mcp.map(m=>'<span class="mcp-pill mcp-'+(pills[m]||'sw')+'">'+m+'</span>').join('')+'</div>';
     t.innerHTML=html;
@@ -1149,6 +1155,68 @@ function renderCascadeValues(n){
 }
 function onCascadeSlide(v){renderCascadeValues(parseInt(v))}
 function updateCascadeCard(n){initCascadeCard(n)}
+
+// ===== CASE 2 — A/B OPTION TOGGLE =====
+function case2SelectOption(opt){
+  var aBtn=document.getElementById('opt-a-btn'),bBtn=document.getElementById('opt-b-btn'),det=document.getElementById('case2-opt-detail');
+  if(!aBtn||!bBtn||!det)return;
+  var sel='flex:1;background:var(--copperBg);border-color:var(--copper);color:var(--copper);font-weight:600';
+  var unsel='flex:1;font-weight:400';
+  clearImpactBadges();
+  if(opt==='A'){
+    aBtn.setAttribute('style',sel);bBtn.setAttribute('style',unsel);
+    det.innerHTML='<div style="padding:8px;background:rgba(22,163,74,0.06);border-left:3px solid var(--green);border-radius:4px;font-size:9px;line-height:1.5;margin-top:6px"><strong>Option A — Hold the merge. Scope feature down.</strong><br>Gate beamforming behind KWS trigger (30% duty cycle). Beamformer goes idle when nobody is talking.<br><br>• Steady-state PL: 12.7W <span style="color:var(--green)">→ T_j 80°C ✓</span><br>• <strong>Cost:</strong> SW only. ~3 days FW work.<br>• <strong>Trade:</strong> Far-field null depth −32dB → −28dB (still beats spec).<br>• <strong>Schedule:</strong> No HW change, no schedule hit. <span style="color:var(--green)">Recommended.</span></div>';
+    addImpactBadge('fpga','warn','<strong style="color:var(--amber)">12.7W</strong> Gated · 30% duty cycle');
+    addImpactBadge('hsbase','info','<strong style="color:var(--green)">OK</strong> 14 fins handles 12.7W');
+    updateCascadeCard(14);
+  }else{
+    bBtn.setAttribute('style',sel);aBtn.setAttribute('style',unsel);
+    det.innerHTML='<div style="padding:8px;background:rgba(180,83,9,0.06);border-left:3px solid var(--amber);border-radius:4px;font-size:9px;line-height:1.5;margin-top:6px"><strong>Option B — Commit feature. Redesign heatsink.</strong><br>14 → 18 fins, base 32 → 36mm. R_θ_ja 4.2 → 3.1 K/W.<br><br>• Steady-state at 16.2W <span style="color:var(--green)">→ T_j 78°C ✓</span><br>• <strong>Cost:</strong> 2-week ANSYS resim + $500 CNC retool.<br>• <strong>Cascade:</strong> Dome clearance 0.08mm → −0.04mm (interference) — dome retool also required.<br>• <strong>Schedule:</strong> +3-4 weeks. Eats holiday launch margin.</div>';
+    addImpactBadge('fpga','crit','<strong style="color:var(--red)">16.2W</strong> Full feature load');
+    addImpactBadge('hsbase','warn','<strong style="color:var(--amber)">RESIZE</strong> 14→18 fins, 32→36mm base');
+    addImpactBadge('dome','crit','<strong style="color:var(--red)">RETOOL</strong> Clearance −0.04mm (interference)');
+    updateCascadeCard(18);
+  }
+}
+
+// ===== CASE 4 — PACKAGING ENVELOPE =====
+var case4Pkg={group:null};
+function clearCase4Packaging(){if(case4Pkg.group){G.remove(case4Pkg.group);case4Pkg.group=null}}
+function showCase4Packaging(){
+  clearCase4Packaging();
+  var grp=new THREE.Group();
+  var boxW=12.5,boxH=4.5,boxD=12.5;
+  var orangeMat=new THREE.MeshStandardMaterial({color:0xff7a3a,roughness:0.85,metalness:0,transparent:true,opacity:0.13,side:THREE.DoubleSide,depthWrite:false});
+  var box=new THREE.Mesh(new THREE.BoxGeometry(boxW,boxH,boxD),orangeMat);
+  box.position.y=boxH/2;grp.add(box);
+  var edges=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(boxW,boxH,boxD)),new THREE.LineBasicMaterial({color:0xff7a3a,transparent:true,opacity:0.85}));
+  edges.position.y=boxH/2;grp.add(edges);
+  var foamMat=new THREE.MeshStandardMaterial({color:0xe5dec8,roughness:0.95,transparent:true,opacity:0.32,depthWrite:false});
+  var foam=new THREE.Mesh(new THREE.BoxGeometry(boxW-1.2,1.6,boxD-1.2),foamMat);
+  foam.position.y=0.8;grp.add(foam);
+  var cutoutMat=new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:0.22});
+  var cutout=new THREE.Mesh(new THREE.CylinderGeometry(5.3,5.3,1.6,40),cutoutMat);
+  cutout.position.y=0.8;grp.add(cutout);
+  G.add(grp);case4Pkg.group=grp;
+}
+function case4SelectVendor(idx){
+  var rows=document.querySelectorAll('.case4-vendor-row');
+  rows.forEach(function(r,i){
+    if(i===idx){r.style.background='rgba(180,92,46,0.08)';r.style.borderLeft='3px solid var(--copper)'}
+    else{r.style.background='';r.style.borderLeft='3px solid transparent'}
+  });
+  var det=document.getElementById('case4-vendor-detail');if(!det)return;
+  var vendors=[
+    {name:'ULINE — stock kraft + 1-color print',body:'<strong>Pros:</strong> Fastest, lowest cost. Stock B-flute corrugated, single-color logo print only.<br><strong>Cons:</strong> Generic look, no eco-flute option, foam tray not included (separate $0.40/u quote).<br><strong>Risk:</strong> Low — proven mass-market vendor.'},
+    {name:'PackOptima — eco-recycled custom flute (recommended)',body:'<strong>Pros:</strong> 70% post-consumer recycled, FSC-certified flute. Full 4-color CMYK. Includes molded EPE tray.<br><strong>Cons:</strong> 5wk lead time tight against the wk-12 reliability slot.<br><strong>Risk:</strong> Medium — confirm FSC stock available before committing.'},
+    {name:'Sealed Air — premium molded foam + box',body:'<strong>Pros:</strong> Best protection. Molded EPE tray with fragility-class B-3 cushioning. Premium finish.<br><strong>Cons:</strong> 6wk lead, $1.85/u (45% premium over ULINE).<br><strong>Risk:</strong> High — eats all schedule margin.'}
+  ];
+  det.innerHTML='<div style="margin-top:8px;padding:8px;background:rgba(180,92,46,0.06);border-left:3px solid var(--copper);border-radius:4px;font-size:9px;line-height:1.5"><strong>'+vendors[idx].name+'</strong><br><br>'+vendors[idx].body+'<br><br><button class="chat-act" style="margin-top:4px" onclick="case4SendRFQ('+idx+')">Send RFQ →</button></div>';
+}
+function case4SendRFQ(idx){
+  var names=['ULINE','PackOptima','Sealed Air'];
+  chatMsg('claude','<strong>RFQ sent to '+names[idx]+'.</strong> Expecting quote within 2 business days. Ticket: <code>PKG-RFQ-'+(101+idx)+'</code>.<div class="msg-mcp"><span class="mcp-pill mcp-sap">SAP</span><span class="mcp-pill mcp-jira">Jira</span></div>');
+}
 
 function fcFinChange(v){const n=parseInt(v);document.getElementById('fc-fn').textContent=n;buildFins(n,'pin');
   const r=thermalCalc(12,85,28,n,'pin');applyThermalColors(r);
