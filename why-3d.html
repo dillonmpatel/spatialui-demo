@@ -86,13 +86,14 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
   <div class="topbar-email" style="flex:1;text-align:center;font-size:0.82rem;color:var(--text3)">dillon.patel.m@gmail.com</div>
   <nav class="topbar-nav">
     <a href="why-3d.html" class="active">3D as Code</a>
-    <a href="roadmap.html">SpatialUI Roadmap</a>
+    <a href="roadmap.html">Roadmap</a>
   </nav>
 </div>
 
 <div class="content">
 
 <h1>Text became the universal interface for software.<br>3D is the universal interface for space.</h1>
+<p class="subtitle" style="margin-bottom:32px">Designing a physical product — a speaker, a phone, a medical device — means juggling shape, heat, cost, and manufacturing across half a dozen specialists and tools. AI can help with each piece separately, but it can't yet see the product itself. Give an AI eyes on the 3D model, and it can reason across all of them at once.</p>
 <div class="cmp">
   <div class="cmp-col">
     <h3>Code</h3>
@@ -113,43 +114,33 @@ sup{font-size:9px;color:var(--copper);font-weight:600;cursor:default}
   <div class="section-icon pi-copper">1</div>
   <h2>3D is the spatial equivalent of code</h2>
   <ul class="section-bullets">
-    <li><strong>Code is the interface between humans and AI for software.</strong> 3D plays the same role for physical and virtual worlds — to generate, edit, simulate, and communicate between both.</li>
-    <li><strong>This needs to be a two-way interaction.</strong> The LLM should be able to annotate, highlight, and manipulate 3D views. The user should be able to select, point, and manipulate back. The 3D viewer is a shared workspace you and the LLM can look at together.</li>
-    <li><strong>The other approach is asking the model to be the program instead of write one.</strong> Generative 3D ignores what makes code useful — you can't inspect it on a granular level, direct it to another tool, or provide specific feedback.</li>
+    <li><strong>Physical products already live in 3D files.</strong> Shape, fit, tolerance, and assembly all exist as 3D models — the source of truth that designers, engineers, and manufacturers share. AI just can't read them yet.</li>
+    <li><strong>Same playbook as code.</strong> When AI got access to code repositories, it could finally help build software end-to-end. 3D files are the equivalent for physical things — structured, inspectable, editable.</li>
+    <li><strong>It needs to be two-way.</strong> The AI should be able to point at parts, highlight clashes, and propose changes. The user should be able to point back — "this surface, not that one." The 3D model becomes a shared workspace.</li>
   </ul>
 </div>
 
 <!-- Point 2 -->
 <div class="section">
   <div class="section-icon pi-blue">2</div>
-  <h2>LLMs may already have the foundation</h2>
+  <h2>What this looks like in practice</h2>
   <ul class="section-bullets">
-    <li><strong>LLM Code showed that tool access can unlock latent capability.</strong> LLMs can already reason about code — bash and grep gave it the way in. I ran a leading LLM on GeoGramBench — it scored 97.6% (488/500). LLMs can translate procedural descriptions and geometric understanding. It just needs the right tools.</li>
-    <li><strong>I use LLM Code daily in hardware R&D at Apple.</strong> It helps with isolated software problems, but I'm hitting the ceiling of what isolated tools can do. The next step is giving an LLM eyes for geometry — the spatial equivalent of bash and grep.</li>
-    <li><strong>Product design and engineering is the right place to start.</strong> It has well-defined workflows, structured data (parametric CAD and GD&amp;T), and tight feedback loops. Broader applications like architecture, robotics, and digital twins will follow naturally.</li>
+    <li><strong>Try the demo.</strong> Open the <a href="spatialLLM-8d5m8p.html" style="color:var(--copper)">home page</a> and click "Case 1: ID wants 30% smaller." The setup: industrial design wants a smart speaker shrunk by 30%. The AI checks if the new shape causes overheating, flags parts that no longer fit, checks the power budget, and estimates the cost change — pulling from design, simulation, and supply chain in one answer.</li>
+    <li><strong>That cross-domain reasoning takes a room of specialists today.</strong> Mechanical, thermal, electrical, manufacturing, supply chain — each looks at one slice and emails the others. The AI can hold all of them in context at once.</li>
+    <li><strong>And it's not just for engineers.</strong> 3D today is fragmented — dozens of file formats, tools that cost thousands and take years to learn. Plain-language access to 3D could open spatial design to people who've never been able to use it.</li>
   </ul>
 </div>
 
 <!-- Point 3 -->
 <div class="section">
   <div class="section-icon pi-green">3</div>
-  <h2>What it would look like</h2>
+  <h2>Why I think it's tractable</h2>
   <ul class="section-bullets">
-    <li><strong>LLM 3D, but for physical products.</strong> Open a 3D assembly. the LLM sees the geometry, traverses the feature tree, measures distances, and cross-references with simulation, PCB, and supply chain data.</li>
-    <li><strong>Try the demo:</strong> click "Case 1: ID wants 30% smaller" on the <a href="spatialLLM-8d5m8p.html" style="color:var(--copper)">home page</a>. the LLM identifies the thermal impact, flags parts that no longer fit, checks the power envelope, and estimates the cost delta — pulling from CAD, simulation, and ERP in one response. That cross-domain reasoning currently takes a room full of specialists.</li>
-    <li><strong>3D today is fragmented.</strong> Dozens of file formats, incompatible renderers, tools that cost thousands and take years to learn. Something like LLM 3D could make spatial design accessible down to the consumer level — people could interact with natural language and work with 3D design tools in ways that have been completely inaccessible to them until now.</li>
-    <li><strong>For the detailed product roadmap and phasing, <a href="roadmap.html" style="color:var(--copper)">see the next page</a>.</strong></li>
-  </ul>
-</div>
-
-<!-- Point 4 -->
-<div class="section">
-  <div class="section-icon pi-amber">4</div>
-  <h2>The honest gaps</h2>
-  <ul class="section-bullets">
-    <li><strong>This isn't ready to ship tomorrow.</strong> GeoGramBench tests procedural geometry, not real CAD files. Metric measurement on production assemblies needs tool augmentation and likely vision fine-tuning. Open questions around CAD encoding, token-efficient geometry, and MCP schema design. Real gaps, but well-scoped and parallelizable.</li>
-    <li><strong>Getting this right requires the right R&D culture and trust.</strong> Taking research into active demos and dogfooding real feedback is how this kind of work moves. But when tools touch physical systems, the reliability bar is completely different than software.</li>
-    <li><strong>My experience on Face ID shaped how I think about this.</strong> We ran data collection, training, and hardware development internally — because the on-device model had to work for everyone, everywhere.</li>
+    <li><strong>Today's AI can already reason about geometry.</strong> I tested a leading model on GeoGramBench, a public set of geometry-reasoning problems — it scored 97.6% (488 of 500). The reasoning is there. What's missing is access to real product files.</li>
+    <li><strong>Tools, not bigger models.</strong> AI got good at code when it got access to a few simple tools — read a file, search a folder. The same playbook should work here: a small set of "spatial tools" (measure this, find that part, check this clearance) gives the AI a way in.</li>
+    <li><strong>I work on this every day.</strong> I use AI coding tools daily in hardware R&amp;D at Apple. They help with isolated software problems, but I'm hitting the ceiling of what isolated tools can do. The next step is giving the AI eyes on geometry.</li>
+    <li><strong>Product design is the right place to start.</strong> Well-defined workflows, structured data, and tight feedback loops. Architecture, robotics, and digital twins follow naturally.</li>
+    <li><strong>For the detailed roadmap and phasing, <a href="roadmap.html" style="color:var(--copper)">see the next page</a>.</strong></li>
   </ul>
 </div>
 
